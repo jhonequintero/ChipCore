@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div id="particles-js"></div>
+        <div class="thead">
+                <div class="Logoheader">
+                    <img class="img1" src="{{ url_for('static', filename='img/Captura_de_pantalla_2025-04-03_081700-removebg-preview.png') }}" alt="">
+                </div>
+        </div>
+    </header>
+    <section>
+        <div class="section">
+            <div class="section1" id="ventana">
+                <div class="ventanadeslizar">
+                    <div class="ventanaperfil">
+                        <button class="logoperfildiv" onclick="Enseñarpag('divperfil')"> <img class="imgperfil"
+                              src="{{ url_for('static', filename='img/profileicon.png') }}" alt="">
+                            <span class="text">Perfil Usuario</span>
+                            <div class="inforuser">
+                                <h2 style="margin-top: 0;" class="letraperfil">User</h2>
+                            </div>
+                        </button>
+                        <!------------------------------------------------------------------------------>
+                    </div>
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('divaggproducts')">
+                            <img src="{{ url_for('static', filename='img/aggproducs.png') }}" alt="" class="buscarboton">
+                            <span class="text">Agregar Productos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('buscarproducto')">
+                            <img src="{{ url_for('static', filename='img/buscarproductos.png') }}" class="buscarboton">
+                            <span class="text">Buscar Productos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('agregaruser')">
+                            <img src="{{ url_for('static', filename='img/agguser.png') }} " alt="" class="buscarboton">
+                            <span class="text">Agregar Usuarios</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('actualizarstock')">
+                            <img  src="{{ url_for('static', filename='img/updateproducts.png') }}" alt="" class="buscarboton">
+                            <span class="text">Mostrar Usuarios</span>
+                            <div class="lineanimada"></div>
+                            </button>
+                    </div>
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('Recibos')">
+                            <img   src="{{ url_for('static', filename='img/iconrecibo.png') }}"  alt="" class="buscarboton">
+                            <span class="text">Crear Recibos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+                </div>
+                <button class="Boton" onclick="deslizarventana()">
+                    <img class="botonimg"  src="{{ url_for('static', filename='img/punta-de-flecha-del-boton-de-reproduccion.png') }}" alt="">
+                </button>
+
+            </div>
+            <!-----------------------Section dos del div mayor---------------------------------->
+            <div class="section2">
+                <div class="sesioncontent flex contenido oculto" id="divperfil">
+                    <div class="interfazperfil">
+                        <h1>Bienvenido.</h1>
+                        <div class="divinfoperfil">
+                            <div class="foto">
+                                <img src="{{ url_for('static', filename='img/iconoperfil.png') }}"  class="iconoperfil" alt="">
+                            </div>
+                             <div class="infouser">
+                                <div class="ficha-empleado">
+                                    <div class="campo">
+                                        <span class="label">Cédula:</span>
+                                        <span class="valor">{{ datos.id }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Nombre:</span>
+                                        <span class="valor">{{ datos.nombre }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Apellido:</span>
+                                        <span class="valor">{{ datos.apellido }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Correo:</span>
+                                        <span class="valor">{{ datos.correo }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Rol:</span>
+                                        <span class="valor">{{ datos.rol }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Código User:</span>
+                                        <span class="valor">{{ datos.codigo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="divboton">
+                                    <button onclick="window.location.href='{{ url_for('inicio') }}'" class="botonsito">Cerrar sesión</button>
+
+
+                                </div>          
+
+                        </div>
+                    </div>
+                </div>
+                <div class="sesioncontent flex1 contenido oculto" id="divaggproducts">
+                    <div class="divtituloagg">
+                        <h1>Agregar Producto.</h1>
+                    </div>
+                    <form class="formularioagg" action="/agregar_producto" method="POST">
+                        <div class="divformularioagg">
+                            <div class="preguntas">
+                                <div class="preguntardatos">
+                                    <div class="pregunta">
+                                        <label for="nombre">- Ingrese el nombre del producto</label>
+                                        <input type="text" id="nombre" name="nombre_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="precio">- Ingrese el precio:</label>
+                                        <input type="number" id="precio" name="precio_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="cantidad">- Ingrese la cantidad del producto </label>
+                                        <input type="number" id="cantidad" name="cantidad_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="descripcion">- Ingrese una descripción breve del producto</label>
+                                        <textarea id="descripcion" name="descripcion_producto" rows="5" cols="40" placeholder="Escribe una descripción..." required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divbotonaggproducto">
+                                <button class="botonsito" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">
+                    <div class="divcuadrobusqueda">
+                        <div class="titulobuscar">
+                            <h1>Buscar Productos</h1>
+                        </div>
+                        <div class="cuadrobusqueda">
+                            <input class="cuadritobusqueda" type="text" id="buscador"
+                                placeholder="Escribe el id del producto">
+                            <button class="botonbusqueda"><img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa"
+                                    alt=""></button>
+                        </div>
+                        <div class="cuadrobusqueda2">
+                            <div class="cuadrorecientes" id="busquedareciente">
+                                <ul class="listareciente">
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                       <div class="divmostrarproductos">
+                        <h1 style="right: 17vh;">
+                            Productos:
+                        </h1>
+                       <!-- SECCIÓN DE PRODUCTOS -->
+<div class="mostrarproductos">
+    <h2>Productos registrados</h2>
+    <p id="mensaje-no-encontrado" style="display: none; color: red; font-weight: bold; text-align: center; margin-top: 2vh;">
+    No se encontraron productos con esas iniciales.
+</p>
+    {% if productos %}
+        {% for p in productos %}
+        <div class="divdivproducto">
+            <div class="botoneditaroeliminar">
+                <div style="width: 3vh; height: 25%;" class="botonx">
+                    <button class="buttonX" onclick="abrirModal({{ p.id_producto }}, '{{ p.nombre_producto }}', '{{ p.descripcion_producto }}', {{ p.cantidad_producto }}, {{ p.precio_producto }})">
+                        <img class="imgx" src="{{ url_for('static', filename='img/tuerca.png') }}" alt="">
+                    </button>
+                </div>
+            </div>
+            <div class="divproducto">
+                <div class="colum1">
+                    <h3>{{ p.nombre_producto }}</h3>
+                    <div class="divdescripcion">
+                        <h4>Descripción</h4>
+                        <div class="letradescripcion">{{ p.descripcion_producto }}</div>
+                    </div>
+                </div>
+                <div class="colum2">
+                    <div class="divid">
+                        <div class="id">
+                            <h3 style="margin-bottom: 1vh;">ID:</h3>
+                            <div class="insertid">{{ p.id_producto }}</div>
+                        </div>
+                        <div class="cantidad">
+                            <h3 style="margin-bottom: 1vh;">Cantidad:</h3>
+                            <div class="insertcantidad">{{ p.cantidad_producto }}</div>
+                        </div>
+                    </div>
+                    <div class="divprice">
+                        <div class="precio">
+                            <h4>Precio:</h4>
+                            <div class="insertprecio">${{ p.precio_producto }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay productos registrados.</p>
+    {% endif %}
+</div>
+<div id="modal-editar" style="display:none;"  class="modal">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarModal()">&times;</span>
+        <form method="POST" action="{{ url_for('actualizar_producto') }}">
+            <input type="hidden" name="id_producto" id="modal_id">
+
+            <label>Nombre:</label>
+            <input type="text" name="nombre_producto" id="modal_nombre"><br>
+
+            <label>Descripción:</label>
+            <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
+
+            <label>Cantidad:</label>
+            <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
+
+            <label>Precio:</label>
+            <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
+
+            <button type="submit">Guardar cambios</button>
+            <button type="button" onclick="cerrarModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+
+
+                    </div>
+                    <div class="compraproductos">
+                        <h2>Productos a comprar</h2>
+                        <div class="divpedirdatosclient">
+                            <form class="formclient" action="">
+                                <label for="">Digita el nombre completo del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                                <label for="">Digita el correo del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                                <label for="">Digita la cedula del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                            </form>
+                        </div>
+                        <div class="divcomprita">
+                            <div class="columna11">
+                                <div class="categorias">
+                                    <div class="especificacion cat1">
+                                        ID
+                                    </div>
+                                    <div class="especificacion cat2">
+                                        Precio
+                                    </div>
+                                    <div class="especificacion cat3">
+                                        Cantidad
+                                    </div>
+                                </div>
+                                <div class="productosenlista ">
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                </div>
+                            </div>
+                            <div class="columna22">
+                                <div class="controldecompra">
+                                    <h2 style="margin-top: 2vh; ">Control</h2>
+                                    <div class="controles">
+                                        <div class="addid">
+                                            <h5 style="margin-bottom: 1vh;">ID</h4>
+                                                <div class="entradadeid">
+                                                    <input class="entradaid" type="number" name="edad">
+                                                </div>
+                                                <h5 style="margin-top: 1.5vh;">Cantidad</h4>
+                                                    <div class="entradadeid">
+                                                        <input class="entradaid" type="number" name="edad">
+                                                    </div>
+                                                    <button class="botonaddid">Agregar</button>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <button class="botonenviarcompra">enviar compra</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="actualizarstock">
+                    <div class="divcuadrobusqueda">
+                        <div class="titulobuscar">
+                            <h1 style="font-size: 6vh;">Buscar Usuarios por Cedula.</h1>
+                        </div>
+                        <div class="cuadrobusqueda">
+                            <input class="cuadritobusqueda" type="text" id="buscadorCedula"
+                                placeholder="Escribe el id del producto">
+                            <button class="botonbusqueda"><img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa"
+                                    alt=""></button>
+                        </div>
+                        <div class="cuadrobusqueda2">
+                            <div class="cuadrorecientes" id="busquedareciente">
+                                <ul class="listareciente">
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 4vh;" class="divmostrarproductos">
+                        <h1 style="right: 0vh;">
+                            Usuarios agregados
+                        </h1>
+  <!-- SECCIÓN DE EMPLEADOS -->
+<div class="mostrarusuarios">
+    <h2>Usuarios registrados</h2>
+    <p id="mensaje-no-usuario" style="display: none; color: red; font-weight: bold; text-align: center; margin-top: 2vh;">
+    No se encontraron usuarios con esa cédula.
+</p>
+
+    {% if usuarios %}
+        {% for u in usuarios %}
+        <div class="divdivuser">
+            <div class="botoneditaroeliminar">
+                <div style="width: 3vh; height: 25%;" class="botonx">
+                    <button class="buttonX" onclick="abrirModalUsuario({{ u.id_usuario }}, '{{ u.nombre }}', '{{ u.apellido }}', '{{ u.correo }}', '{{ u.id_usuario }}', '{{ u.rol }}')">
+                        <img class="imgx" src="{{ url_for('static', filename='img/x.png') }}" alt="Editar">
+                    </button>
+                </div>
+            </div>
+            <div class="divuser">
+                <div class="colum1" style="display: flex; justify-content: center; align-items: center;">
+                    <div class="genero">
+                        <img style="border: 1px ridge black;" class="Imggener" src="{{ url_for('static', filename='img/mujer.png') }}" alt="Imagen Usuario">
+                    </div>
+                </div>
+                <div class="colum2" style="display: flex; justify-content: center; align-items: center;">
+                    <div class="divnombreydatos">
+                        <div class="nombredato">
+                            <h3 style="margin-top: 0;">{{ u.nombre }} {{ u.apellido }}</h3>
+                        </div>
+                        <div class="divdatos">
+                            <div class="dato1 displaydatos">
+                                <div class="caracter"><h5>ID:</h5></div>
+                                <div class="pedircaracter">EMP{{ "%03d"|format(u.id_usuario) }}</div>
+                            </div>
+                            <div class="dato2 displaydatos">
+                                <div class="caracter"><h5>Correo:</h5></div>
+                                <div class="pedircaracter">{{ u.correo }}</div>
+                            </div>
+                            <div class="dato3 displaydatos">
+                                <div class="caracter"><h5>Cédula:</h5></div>
+                                <div class="pedircaracter">{{ u.id_usuario }}</div>
+                            </div>
+                            <div class="dato4 displaydatos">
+                                <div class="caracter"><h5>Rol:</h5></div>
+                                <div class="pedircaracter">{{ u.rol }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay usuarios registrados.</p>
+    {% endif %}
+</div>
+
+
+
+                    </div>
+                </div>
+                <div class="sesioncontent flex1 contenido oculto" id="agregaruser">
+                    <div class="divtituloagg">
+                        <h1>Agregar Usuario.</h1>
+                    </div>
+                    <form id="form-empleado" class="formularioagg">
+                        <div class="divformularioagg">
+                            <div class="preguntas">
+                                <div class="preguntardatos">
+                                    <div class="pregunta">
+                                        <label for="id_usuario">-Ingrese la ID del Usuario</label>
+                                        <input style="padding-left: 1vh;" type="number" id="id_usuario"
+                                            name="id_usuario" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="nombre">-Ingrese el Nombre del Usuario</label>
+                                        <input style="padding-left: 1vh;" type="text" id="nombre" name="nombre"
+                                            required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="apellido">-Ingrese el Apellido</label>
+                                        <input style="padding-left: 1vh;" type="text" id="apellido" name="apellido"
+                                            required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="correo">-Ingrese el Correo</label>
+                                        <input style="padding-left: 1vh;" type="email" id="correo" name="correo"
+                                            required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="contrasena">-Ingrese la Contraseña</label>
+                                        <input style="padding-left: 1vh;" type="password" id="contrasena"
+                                            name="contrasena" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divbotonaggproducto">
+                                <button class="botonsito" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="sesioncontent flex1 contenido oculto" id="Recibos">
+                    <div class="divmostrarfacturas">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <div class="tfoot">
+
+        </div>
+    </footer>
+    
+     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+     <script src="{{ url_for('static', filename='js/script_admin.js') }}"></script>
+</body>
+</html>

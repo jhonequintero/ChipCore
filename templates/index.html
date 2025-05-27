@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="particles-js"></div>
+
+    <section>
+        <div class="contenedor_principal">
+            <div class="contenedor_secciones">
+                <img id="imagen_" src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
+            </div>
+
+            <!--Boton inicio-->
+            <div class="contenedor_botones">
+                <div class="contenedor">
+                    <span class="tooltip">Iniciar Sesión</span>
+                    <img id="imagen_2" src="{{ url_for('static', filename='img/Captura_de_pantalla_2025-04-02_073035-removebg-preview.png') }}" alt="Iniciar Sesión" onclick="abrirPopup('inicioSesion')">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--  Inicio de seciion ventana emergente -->
+    <div id="inicioSesion" class="popup">
+        <div class="popup-contenido">
+            <div class="conte_imagen">
+                <img id="imagen_3" src="{{ url_for('static', filename='img/Captura_de_pantalla_2025-04-03_081700-removebg-preview.png') }}" alt="">
+            </div>
+            <span class="cerrar" onclick="cerrarPopup('inicioSesion')">&times;</span>
+
+            <div class="contenedor-central">
+                <div class="contenedor_centrado_info">
+                    <p class="titulo">Iniciar Sesión</p>
+                    <br>
+                    <!--formulario -->
+                    <form id="formLogin">
+                        <div class="info_correo">
+                            <div class="form__group field">
+                                <input type="text" class="form__field" placeholder="Correo Electrónico" name="correo" id="correo" required>
+                                <label for="correo" class="form__label">Correo Electrónico</label>
+                            </div>
+                        </div>
+
+                        <div class="info_contra">
+                            <div class="form__group field">
+                                <input type="password" class="form__field contra" placeholder="Contraseña" name="contrasena" id="contrasena" required>
+                                <div class="campo_con_icono">
+                                    <i class="fa-solid fa-eye-slash icono-ojo" onclick="togglePassword()" id="iconoOjo"></i>
+                                </div>
+                                <label for="contrasena" class="form__label">Contraseña</label>
+                            </div>
+                        </div>
+                        <!-- boton ingresar -->
+                        <div class="boton_ingresar">
+                            <button type="submit" class="animated-button">
+                                <span>Ingresar</span>
+                                <span></span>
+                            </button>
+                        </div>
+
+                        <!--mensaje error -->
+                        <div id="mensaje-error" class="error"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

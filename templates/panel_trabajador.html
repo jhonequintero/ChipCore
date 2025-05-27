@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Trabajador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_trabajador.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div id="particles-js"></div>
+        <div class="thead">
+                <div class="Logoheader">
+                    <img class="img1" src="{{ url_for('static', filename='img/Captura_de_pantalla_2025-04-03_081700-removebg-preview.png') }}" alt="">
+                </div>
+        </div>
+    </header>
+     <section>
+        <div class="section">
+            <div class="section1" id="ventana">
+                <div class="ventanadeslizar">
+                    <div class="ventanaperfil">
+                        <button class="logoperfildiv" onclick="Enseñarpag('divperfil')"> <img class="imgperfil"
+                                src="imagenes/profileicon.png" alt="">
+                            <span class="text">Perfil Usuario</span>
+                            <div class="inforuser">
+                                <h2 style="margin-top: 0;" class="letraperfil">User</h2>
+                            </div>
+                        </button>
+                        <!------------------------------------------------------------------------------>
+                    </div>
+                    
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('buscarproducto')">
+                            <img src="imagenes/buscarproductos.png" alt="" class="buscarboton">
+                            <span class="text">Buscar Productos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+
+                  
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('Recibos')">
+                            <img src="imagenes/iconrecibo.png" alt="" class="buscarboton">
+                            <span class="text">Crear Recibos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+                </div>
+                <button class="Boton" onclick="deslizarventana()">
+                    <img class="botonimg" src="imagenes/punta-de-flecha-del-boton-de-reproduccion.png" alt="">
+                </button>
+
+            </div>
+            <!-----------------------Section dos del div mayor---------------------------------->
+            <div class="section2">
+                <div class="sesioncontent flex contenido oculto" id="divperfil">
+                    <div class="interfazperfil">
+                        <h1>Bienvenido.</h1>
+                        <div class="divinfoperfil">
+                            <div class="foto">
+                                <img src="imagenes/iconoperfil.png" class="iconoperfil" alt="">
+                            </div>
+                            <div class="infouser">
+                                <div class="ficha-empleado">
+                                    <div class="campo">
+                                        <span class="label">Cédula:</span>
+                                        <span class="valor">{{ datos.id }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Nombre:</span>
+                                        <span class="valor">{{ datos.nombre }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Apellido:</span>
+                                        <span class="valor">{{ datos.apellido }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Correo:</span>
+                                        <span class="valor">{{ datos.correo }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Rol:</span>
+                                        <span class="valor">{{ datos.rol }}</span>
+                                    </div>
+                                    <div class="campo">
+                                        <span class="label">Código User:</span>
+                                        <span class="valor">{{ datos.codigo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">
+                    <div class="divcuadrobusqueda">
+                        <div class="titulobuscar">
+                            <h1>Buscar Productos</h1>
+                        </div>
+                        <div class="cuadrobusqueda">
+                            <input class="cuadritobusqueda" type="text" id="buscador"
+                                placeholder="Escribe el id del producto">
+                            <button class="botonbusqueda"><img src="imagenes/lupe.png" class="imagenlupa"
+                                    alt=""></button>
+                        </div>
+                        <div class="cuadrobusqueda2">
+                            <div class="cuadrorecientes" id="busquedareciente">
+                                <ul class="listareciente">
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="divmostrarproductos">
+                        <h1 style="right: 17vh;">
+                            Productos:
+                        </h1>
+                        <div class="mostrarproductos">
+                            <div class="divdivproducto">
+                                <div class="botoneditaroeliminar">
+                                    <div style="width: 3vh; height: 25%;" class="botonx">
+                                        <button class="buttonX">
+                                            <img class="imgx" src="imagenes/tuerca.png" alt="">
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divproducto">
+                                    <div class="colum1">
+                                        <h3>MOUSE GENIUS USB NEGRO
+                                        </h3>
+                                        <div class="divdescripcion">
+                                            <h4>Descripcion</h4>
+                                            <div class="letradescripcion">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="colum2">
+                                        <div class="divid">
+                                            <div class="id">
+                                                <h3 style="margin-bottom: 1vh;">ID :</h3>
+                                                <div class="insertid">
+
+                                                </div>
+                                            </div>
+                                            <div class="cantidad">
+                                                <h3 style="margin-bottom: 1vh;"> Cantidad:</h3>
+                                                <div class="insertcantidad"> </div>
+                                            </div>
+                                        </div>
+                                        <div class="divprice">
+                                            <div class="precio">
+                                                <h4>Precio:</h4>
+                                                <div class="insertprecio"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divdivproducto">
+                                <div class="botoneditaroeliminar">
+                                    <div style="width: 3vh; height: 25%;" class="botonx">
+                                        <button class="buttonX">
+                                            <img class="imgx" src="imagenes/tuerca.png" alt="">
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divproducto">
+                                    <div class="colum1">
+                                        <h3>MOUSE INALAMBRICO GENIUS ROJO
+                                        </h3>
+                                        <div class="divdescripcion">
+                                            <h4>Descripcion</h4>
+                                            <div class="letradescripcion">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="colum2">
+                                        <div class="divid">
+                                            <div class="id">
+                                                <h3 style="margin-bottom: 1vh;">ID :</h3>
+                                                <div class="insertid">
+
+                                                </div>
+                                            </div>
+                                            <div class="cantidad">
+                                                <h3 style="margin-bottom: 1vh;"> Cantidad:</h3>
+                                                <div class="insertcantidad"> </div>
+                                            </div>
+                                        </div>
+                                        <div class="divprice">
+                                            <div class="precio">
+                                                <h4>Precio:</h4>
+                                                <div class="insertprecio"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                            <div class="divdivproducto"></div>
+                        </div>
+                    </div>
+                    <div class="compraproductos">
+                        <h2>Productos a comprar</h2>
+                        <div class="divpedirdatosclient">
+                            <form class="formclient" action="">
+                                <label for="">Digita el nombre completo del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                                <label for="">Digita el correo del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                                <label for="">Digita la cedula del cliente</label>
+                                <input style="padding-left: 1vh;" type="text" id="Iditem" name="Id" required>
+                            </form>
+                        </div>
+                        <div class="divcomprita">
+                            <div class="columna11">
+                                <div class="categorias">
+                                    <div class="especificacion cat1">
+                                        ID
+                                    </div>
+                                    <div class="especificacion cat2">
+                                        Precio
+                                    </div>
+                                    <div class="especificacion cat3">
+                                        Cantidad
+                                    </div>
+                                </div>
+                                <div class="productosenlista ">
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                    <div class="producto"></div>
+                                </div>
+                            </div>
+                            <div class="columna22">
+                                <div class="controldecompra">
+                                    <h2 style="margin-top: 2vh; ">Control</h2>
+                                    <div class="controles">
+                                        <div class="addid">
+                                            <h5 style="margin-bottom: 1vh;">ID</h4>
+                                                <div class="entradadeid">
+                                                    <input class="entradaid" type="number" name="edad">
+                                                </div>
+                                                <h5 style="margin-top: 1.5vh;">Cantidad</h4>
+                                                    <div class="entradadeid">
+                                                        <input class="entradaid" type="number" name="edad">
+                                                    </div>
+                                                    <button class="botonaddid">Agregar</button>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <button class="botonenviarcompra">enviar compra</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sesioncontent flex1 contenido oculto" id="Recibos">
+                    <div class="divmostrarfacturas">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    
+   
+                
+
+    <footer>
+        <div class="tfoot">
+
+        </div>
+    </footer>
+    
+     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+     <script src="{{ url_for('static', filename='js/script_trabajador.js') }}"></script>
+</body>
+</html>
