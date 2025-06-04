@@ -926,6 +926,48 @@ h5 {
     font-size: 2vh;
 }
 
+
+.productosenlista {
+    display: grid;
+    grid-template-columns: 60px 100px 140px 120px 60px;
+    gap: 10px;
+    align-items: center;
+    margin-top: 1em;
+}
+
+.producto {
+    display: contents;
+    /* permite que cada producto se divida en grid cells */
+}
+
+.celda {
+    text-align: center;
+    font-size: 14px;
+}
+
+.celda.cantidad button {
+    margin: 0 5px;
+    padding: 2px 7px;
+    cursor: pointer;
+}
+
+.celda.eliminar button {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.categorias {
+    display: grid;
+    grid-template-columns: 60px 100px 140px 120px 60px;
+    font-weight: bold;
+    border-bottom: 2px solid #444;
+    padding-bottom: 6px;
+    margin-top: 1em;
+    text-align: center;
+}
+
 /*---------------- pagina buscar user------------------------*/
 .divuser {
 
@@ -1020,15 +1062,38 @@ h5 {
 
 /*-----------------(Factura)-------------------------*/
 .divmostrarfacturas {
-    width: 70%;
+    width: 100%;
     margin-top: 5vh;
-    height: 80vh;
     background: #ffffff;
     border-radius: 1vh;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-bottom: 1vh;
+}
+
+.divmostrarfacturas th {
+    position: sticky;
+    top: 0;
+    background-color: #f2f2f2;
+    z-index: 2;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.divmostrarfacturas table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+.divmostrarfacturas th,
+.divmostrarfacturas td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
 }
 
 /*----------------------------------------Ventana emergente actualizar datos----------------------------------*/
@@ -1041,7 +1106,6 @@ h5 {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.6);
-    /* fondo oscuro tipo censura */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1065,7 +1129,6 @@ h5 {
     cursor: pointer;
     color: #333;
 }
-
 
 
 /*----------------------------------------tfoot----------------------------------*/

@@ -98,7 +98,7 @@ function filtrarProductos() {
     const inputElement = document.getElementById("buscador");
     const texto = inputElement.value.trim().toLowerCase();
     const productos = document.querySelectorAll(".divdivproducto");
-    const mensaje = document.getElementById("mensaje-no-encontrado"); // Mensaje de no encontrado
+    const mensaje = document.getElementById("mensaje-no-encontrado");
 
     let encontrados = 0;
 
@@ -106,14 +106,16 @@ function filtrarProductos() {
         productos.forEach(producto => {
             producto.style.display = "flex";
         });
-        if (mensaje) mensaje.style.display = "none"; // Ocultar mensaje
+        if (mensaje) mensaje.style.display = "none";
         inputElement.focus();
         return;
     }
 
     productos.forEach(producto => {
         const nombre = producto.querySelector(".colum1 h3").textContent.toLowerCase();
-        if (nombre.includes(texto)) {
+        const id = producto.querySelector(".insertid")?.textContent.toLowerCase() || "";
+
+        if (nombre.includes(texto) || id.includes(texto)) {
             producto.style.display = "flex";
             encontrados++;
         } else {
@@ -121,7 +123,6 @@ function filtrarProductos() {
         }
     });
 
-    // Mostrar mensaje si no se encontró ninguno
     if (mensaje) {
         mensaje.style.display = encontrados === 0 ? "block" : "none";
     }
@@ -188,48 +189,293 @@ document.getElementById("buscadorCedula").addEventListener("keydown", function (
     }
 });
 
+let carrito = [];
+async function verificarYAgregar(id, cantidad) {
+    try {
+        // Verificar si ya existe en carrito
+        const existe = carrito.find(p => p.id === id);
+        const cantidadActual = existe ? existe.cantidad : 0;
+        const cantidadTotal = cantidadActual + cantidad;
 
-function agregarAlCarrito() {
-    const id = document.getElementById("inputId").value;
-    const cantidad = parseInt(document.getElementById("inputCantidad").value);
-    const mensaje = document.getElementById("mensajeError");
-    const tabla = document.getElementById("tablaCarrito");
+        const respuesta = await fetch("/verificar_producto", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, cantidad: cantidadTotal }) // enviar cantidad total
+        });
 
-    mensaje.innerText = ""; // Limpiar mensajes
+        const data = await respuesta.json();
+
+        if (!data.existe) {
+            alert("❌ " + data.mensaje);
+            return;
+        }
+
+        if (!data.suficiente) {
+            alert("⚠️ " + data.mensaje + `. Solo quedan ${data.stock} unidades.`);
+            return;
+        }
+
+        // Ahora que ya está validado, actualizamos carrito con la cantidad que quieres agregar
+        if (existe) {
+            existe.cantidad += cantidad; // solo sumamos la cantidad nueva
+        } else {
+            carrito.push(data.producto);
+        }
+        renderCarrito();
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("❌ Error al conectar con el servidor.");
+    }
+}
+
+function agregarAlCarrito(producto) {
+    const existe = carrito.find(p => p.id === producto.id);
+    if (existe) {
+        existe.cantidad += producto.cantidad;
+    } else {
+        carrito.push(producto);
+    }
+    renderCarrito();
+}
+
+
+document.querySelector(".botonaddid").addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const inputs = document.querySelectorAll(".addid .entradaid");
+    const inputID = inputs[0];
+    const inputCantidad = inputs[1];
+
+    const id = parseInt(inputID.value);
+    const cantidad = parseInt(inputCantidad.value);
 
     if (!id || !cantidad || cantidad <= 0) {
-        mensaje.innerText = "Por favor ingrese un ID y cantidad válida.";
+        alert("❗ Ingresa un ID y cantidad válidos.");
         return;
     }
 
-    const producto = document.querySelector(`.producto[data-id="${id}"]`);
-    if (!producto) {
-        mensaje.innerText = "Producto no encontrado.";
+    await verificarYAgregar(id, cantidad);
+
+    // Vaciar los campos después de agregar
+    inputID.value = "";
+    inputCantidad.value = "";
+});
+
+function renderCarrito() {
+    const container = document.querySelector(".productosenlista");
+    container.innerHTML = "";
+
+    carrito.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        const precioTotal = item.precio * item.cantidad;
+
+        div.innerHTML = `
+            <div class="celda eliminar">
+                <button onclick="eliminar(${item.id})">🗑️</button>
+            </div>
+            <div class="celda id">${item.id}</div>
+            <div class="celda cantidad">
+                <button onclick="decrementar(${item.id})">-</button>
+                ${item.cantidad}
+                <button onclick="incrementar(${item.id})">+</button>
+            </div>
+            <div class="celda precio">$${item.precio.toFixed(2)}</div>
+            
+            <div class="celda precio-total">$${precioTotal.toFixed(2)}</div>
+            
+        `;
+        container.appendChild(div);
+    });
+}
+
+function incrementar(id) {
+    const item = carrito.find(p => p.id === id);
+    if (!item) return;
+
+    verificarYAgregar(id, 1); // vuelve a verificar stock y agrega solo si se puede
+}
+
+
+function decrementar(id) {
+    const item = carrito.find(p => p.id === id);
+    if (!item) return;
+
+    item.cantidad--;
+    if (item.cantidad <= 0) {
+        carrito = carrito.filter(p => p.id !== id);
+    }
+    renderCarrito();
+}
+
+function eliminar(id) {
+    carrito = carrito.filter(p => p.id !== id);
+    renderCarrito();
+}
+
+
+
+document.getElementById('cedula').addEventListener('blur', function () {
+    const cedula = this.value.trim();
+    if (cedula === '') return;
+
+    fetch('/buscar_cliente', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cedula })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.existe) {
+                document.getElementById('nombre_completo').value = data.nombre;
+                document.getElementById('correo').value = data.correo;
+            } else {
+                // Si no existe, limpiar campos para que el usuario escriba
+                document.getElementById('nombre_completo').value = '';
+                document.getElementById('correo').value = '';
+            }
+        })
+        .catch(err => {
+            console.error('Error al buscar cliente:', err);
+        });
+});
+
+document.querySelector(".botonenviarcompra").addEventListener("click", async () => {
+    const nombre = document.getElementById("nombre_completo").value;
+    const correo = document.getElementById("correo").value;
+    const cedula = document.getElementById("cedula").value;
+
+    if (!nombre || !correo || !cedula || carrito.length === 0) {
+        alert("❗ Debes llenar los datos del cliente y tener productos en el carrito.");
         return;
     }
 
-    const precio = parseFloat(producto.getAttribute("data-precio"));
-    let stock = parseInt(producto.getAttribute("data-stock"));
+    const data = {
+        cliente: {
+            nombre,
+            correo,
+            cedula
+        },
+        carrito
+    };
 
-    if (cantidad > stock) {
-        mensaje.innerText = "Cantidad no disponible.";
-        return;
+    try {
+        const res = await fetch("/finalizar_compra", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            alert("❌ Error: " + (errorData.mensaje || "Error desconocido"));
+            return;
+        }
+
+        const result = await res.json();
+        alert(result.mensaje);
+
+        // Vaciar carrito
+        carrito = [];
+        renderCarrito();
+
+        // Vaciar formulario
+        document.getElementById("nombre_completo").value = "";
+        document.getElementById("correo").value = "";
+        document.getElementById("cedula").value = "";
+
+    } catch (err) {
+        console.error("Error:", err);
+        alert("❌ Hubo un problema al guardar la compra.");
     }
+});
+async function cargarVentas() {
+    const contenedor = document.querySelector('.divmostrarfacturas');
+    contenedor.innerHTML = 'Cargando registros de ventas...';
 
-    // Actualizar stock visualmente
-    stock -= cantidad;
-    producto.setAttribute("data-stock", stock);
-    producto.children[2].innerText = stock;
+    try {
+        const res = await fetch('/api/ventas');
+        if (!res.ok) throw new Error('Error al obtener ventas');
 
-    // Calcular precio total
-    const precioTotal = precio * cantidad;
+        const ventas = await res.json();
 
-    // Agregar a la tabla del carrito
-    const fila = document.createElement("tr");
-    fila.innerHTML = `
-      <td>${id}</td>
-      <td>${cantidad}</td>
-      <td>$${precioTotal.toLocaleString()}</td>
-    `;
-    tabla.appendChild(fila);
+        if (ventas.length === 0) {
+            contenedor.innerHTML = '<p>No hay registros de ventas.</p>';
+            return;
+        }
+
+        let html = `
+            <h2>Registro de Ventas</h2>
+            <table border="1" cellspacing="0" cellpadding="4">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Folio</th>
+                        <th>Nombre Cliente</th>
+                        <th>Cédula Cliente</th>
+                        <th>Código Producto</th>
+                        <th>Nombre Producto</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Vendedor</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        ventas.forEach(v => {
+            html += `
+                <tr>
+                    <td>${v.fecha}</td>
+                    <td>${v.hora}</td>
+                    <td>${v.folio}</td>
+                    <td>${v.nombre_cliente}</td>
+                    <td>${v.cedula_cliente}</td>
+                    <td>${v.codigo_producto}</td>
+                    <td>${v.nombre_producto}</td>
+                    <td>${v.cantidad}</td>
+                    <td>$${v.total.toFixed(2)}</td>
+                    <td>${v.vendedor}</td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        contenedor.innerHTML = html;
+
+    } catch (error) {
+        contenedor.innerHTML = `<p>Error al cargar ventas: ${error.message}</p>`;
+    }
+}
+
+
+async function cambiarEstadoUsuario(id_usuario) {
+    try {
+        const response = await fetch(`/usuario/${id_usuario}/cambiar_estado`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'  // opcional para diferenciar peticiones ajax
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Encuentra el botón y cambia el texto
+            const btn = document.querySelector(`button.buttonEstado[onclick="cambiarEstadoUsuario(${id_usuario})"]`);
+            if (btn) {
+                btn.textContent = data.nuevo_estado ? 'Desactivar' : 'Activar';
+            }
+            alert(`Usuario ${data.nuevo_estado ? 'activado' : 'desactivado'} correctamente`);
+        } else {
+            alert('Error: ' + (data.msg || 'No se pudo cambiar el estado'));
+        }
+    } catch (error) {
+        alert('Error en la petición: ' + error.message);
+    }
 }
