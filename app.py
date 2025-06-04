@@ -5,14 +5,10 @@ from datetime import datetime
 import os
 import re
 import random
-
-# folio = f"F{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
-
-
 import threading
 
 # Librerías para PDF y correo
-import pdfkit  # o usa ReportLab si prefieres
+import pdfkit
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -30,8 +26,8 @@ db = SQLAlchemy(app)
 
 class Usuario(db.Model):
     __tablename__ = 'usuario'
-    codigo = db.Column(db.Integer, primary_key=True) 
-    id_usuario = db.Column(db.Integer, unique=True, nullable=False)  
+    codigo = db.Column(db.Integer, primary_key=True)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     apellido = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(100), unique=True, nullable=False)
@@ -39,7 +35,6 @@ class Usuario(db.Model):
     rol = db.Column(db.String(20), nullable=False)
     estado = db.Column(db.Boolean, default=True)
     codigo_empleado = db.Column(db.String(10), unique=True)
-    
 
 
 class Producto(db.Model):
@@ -81,18 +76,16 @@ class VentaCabecera(db.Model):
     vendedor = db.relationship('Usuario', backref='ventas')
 
 
-
 class VentaDetalle(db.Model):
     __tablename__ = 'venta_detalle'
     id_detalle = db.Column(db.Integer, primary_key=True)
     id_venta = db.Column(db.Integer, db.ForeignKey('venta_cabecera.id_venta'))
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'))
     cantidad = db.Column(db.Integer)
-    precio = db.Column(db.Float)
+    precio = db.Column(db.Float) # Este es el precio unitario del producto en el momento de la venta
 
     venta = db.relationship('VentaCabecera', backref='detalles')
     producto = db.relationship('Producto')
-
 
 
 with app.app_context():
@@ -108,7 +101,7 @@ with app.app_context():
     for adm in admins:
         if not Usuario.query.filter_by(correo=adm['correo']).first():
             nuevo_admin = Usuario(
-                id_usuario=adm['id_usuario'], 
+                id_usuario=adm['id_usuario'],
                 nombre=adm['nombre'],
                 apellido=adm['apellido'],
                 correo=adm['correo'],
@@ -143,7 +136,7 @@ def login():
         if check_password_hash(usuario.contrasena, contrasena):
             session['usuario'] = usuario.correo
             session['tipo'] = usuario.rol
-            session['id_usuario'] = usuario.id_usuario 
+            session['id_usuario'] = usuario.id_usuario
 
             if usuario.rol == 'administrador':
                 return jsonify(success=True, redirect=url_for('panel_admin'))
@@ -156,6 +149,7 @@ def login():
             return jsonify(success=False, error="Contraseña incorrecta", campo="contrasena")
 
     return jsonify(success=False, error="Correo o contraseña incorrectos", campo="ambos")
+
 @app.route('/panel_admin')
 def panel_admin():
     if 'usuario' in session and session.get('tipo') == 'administrador':
@@ -168,16 +162,11 @@ def panel_admin():
             "correo": usuario.correo,
             "rol": usuario.rol,
             "codigo_empleado": usuario.codigo_empleado
-
-           
         }
 
-        # empleados = Usuario.query.filter_by(rol='empleado', estado=True).all()
         empleados = Usuario.query.filter_by(rol='empleado').all()
-
         productos = Producto.query.all()
-        facturas = VentaCabecera.query.all()
-
+        facturas = VentaCabecera.query.all() # Para el panel de admin, si necesita ver todas las facturas
 
         return render_template(
             'panel_admin.html',
@@ -188,8 +177,10 @@ def panel_admin():
         )
 
     return redirect(url_for('inicio'))
+
 @app.route('/registrar_empleado', methods=['POST'])
 def registrar_empleado():
+    # Solo administradores pueden registrar empleados
     if 'usuario' in session and session.get('tipo') == 'administrador':
         cedula = request.form.get('id_usuario', '').strip()
         nombre = request.form.get('nombre', '').strip()
@@ -209,7 +200,7 @@ def registrar_empleado():
         if Usuario.query.filter_by(correo=correo).first():
             return jsonify(success=False, error="El correo ya está registrado.")
 
-        # Obtener el último número del código_empleado correctamente
+        # Obtener el último número del codigo_empleado correctamente
         from sqlalchemy import func, cast, Integer
 
         ultimo_num = db.session.query(
@@ -242,8 +233,10 @@ def registrar_empleado():
         return jsonify(success=True, mensaje="Empleado registrado exitosamente.")
 
     return jsonify(success=False, error="Acceso no autorizado.")
+
 @app.route('/panel_trabajador')
 def panel_trabajador():
+    # Acceso para empleados
     if 'usuario' in session and session.get('tipo') == 'empleado':
         usuario = Usuario.query.filter_by(correo=session['usuario']).first()
         if usuario:
@@ -255,22 +248,36 @@ def panel_trabajador():
                 "rol": usuario.rol,
                 "codigo_empleado": usuario.codigo_empleado
             }
-            return render_template('panel_trabajador.html', datos=datos)
+            # Los productos y las ventas se pasan para que el trabajador pueda verlos
+            productos = Producto.query.all()
+            # Para el trabajador, solo se mostrarán sus propias ventas en el panel principal
+            facturas = VentaCabecera.query.filter_by(id_vendedor=usuario.id_usuario).all()
+
+
+            return render_template('panel_trabajador.html',
+                                   datos=datos,
+                                   productos=productos,
+                                   facturas=facturas)
     return redirect(url_for('inicio'))
 
 
 @app.route('/usuario/<int:id_usuario>/cambiar_estado', methods=['POST'])
 def cambiar_estado_usuario(id_usuario):
-    usuario = Usuario.query.filter_by(id_usuario=id_usuario).first()
-    if not usuario:
-        return jsonify({'success': False, 'msg': 'Usuario no encontrado'}), 404
+    # Solo administradores pueden cambiar el estado de los usuarios
+    if 'usuario' in session and session.get('tipo') == 'administrador':
+        usuario = Usuario.query.filter_by(id_usuario=id_usuario).first()
+        if not usuario:
+            return jsonify({'success': False, 'msg': 'Usuario no encontrado'}), 404
 
-    usuario.estado = not usuario.estado  # cambia el estado
-    db.session.commit()
-    return jsonify({'success': True, 'nuevo_estado': usuario.estado})
+        usuario.estado = not usuario.estado  # cambia el estado
+        db.session.commit()
+        return jsonify({'success': True, 'nuevo_estado': usuario.estado})
+    return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
+
 
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
+    # Solo administradores pueden agregar productos
     if 'usuario' in session and session.get('tipo') == 'administrador':
         nombre = request.form['nombre_producto']
         descripcion = request.form['descripcion_producto']
@@ -287,17 +294,18 @@ def agregar_producto():
         db.session.add(nuevo_producto)
         db.session.commit()
 
-        # Redirigir a panel_admin para que se muestre todo junto
         return redirect(url_for('panel_admin'))
     return redirect(url_for('inicio'))
 
 
 @app.route('/ver_productos')
 def ver_productos():
+    # Esta ruta es para que el administrador vea los productos.
+    # Para el trabajador, se manejará directamente en su panel.
     if 'usuario' in session and session.get('tipo') == 'administrador':
         usuario = Usuario.query.filter_by(correo=session['usuario']).first()
         productos = Producto.query.all()
-        empleados = Usuario.query.filter_by(rol='empleado', estado=True).all()  # <--- Esto
+        empleados = Usuario.query.filter_by(rol='empleado', estado=True).all()
         datos = {
             "id": usuario.id_usuario,
             "nombre": usuario.nombre,
@@ -305,32 +313,58 @@ def ver_productos():
             "correo": usuario.correo,
             "rol": usuario.rol,
             "codigo_empleado": usuario.codigo_empleado
-            # "codigo": f"EMP{str(usuario.id_usuario).zfill(3)}"
         }
-        # Pasamos empleados y productos para que el panel admin muestre todo
         return render_template('panel_admin.html', datos=datos, vista='productos', productos=productos, usuarios=empleados)
     return redirect(url_for('inicio'))
 
+# Nueva ruta para que el trabajador vea los productos (opcional, si quieres una vista dedicada)
+# Si el trabajador solo los ve dentro de su panel principal, no es estrictamente necesaria.
+# Sin embargo, si quieres que 'ver_productos' sea una acción específica para el trabajador, puedes usarla.
+@app.route('/ver_productos_trabajador')
+def ver_productos_trabajador():
+    if 'usuario' in session and session.get('tipo') == 'empleado':
+        usuario = Usuario.query.filter_by(correo=session['usuario']).first()
+        productos = Producto.query.all()
+        datos = {
+            "id": usuario.id_usuario,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "correo": usuario.correo,
+            "rol": usuario.rol,
+            "codigo_empleado": usuario.codigo_empleado
+        }
+        return render_template('panel_trabajador.html', datos=datos, vista='productos', productos=productos)
+    return redirect(url_for('inicio'))
+
+
 @app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
-    id_producto = request.form.get('id_producto')
-    nombre = request.form.get('nombre_producto')
-    descripcion = request.form.get('descripcion_producto')
-    cantidad = int(request.form.get('cantidad_producto', 0))
-    precio = float(request.form.get('precio_producto', 0.0))
+    # Solo administradores pueden actualizar productos
+    if 'usuario' in session and session.get('tipo') == 'administrador':
+        id_producto = request.form.get('id_producto')
+        nombre = request.form.get('nombre_producto')
+        descripcion = request.form.get('descripcion_producto')
+        cantidad = int(request.form.get('cantidad_producto', 0))
+        precio = float(request.form.get('precio_producto', 0.0))
 
-    producto = Producto.query.get(id_producto)
-    if producto:
-        producto.nombre_producto = nombre
-        producto.descripcion_producto = descripcion
-        producto.cantidad_producto = cantidad
-        producto.precio_producto = precio
-        db.session.commit()
+        producto = Producto.query.get(id_producto)
+        if producto:
+            producto.nombre_producto = nombre
+            producto.descripcion_producto = descripcion
+            producto.cantidad_producto = cantidad
+            producto.precio_producto = precio
+            db.session.commit()
 
-    return redirect(url_for('panel_admin', vista='productos'))
+        return redirect(url_for('panel_admin', vista='productos'))
+    return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
+
 
 @app.route('/verificar_producto', methods=['POST'])
 def verificar_producto():
+    # Permitir a administradores y empleados verificar productos
+    if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
+        return jsonify({"existe": False, "mensaje": "Acceso no autorizado"}), 401
+
     data = request.get_json()
     id_producto = data.get("id")
     cantidad = data.get("cantidad")
@@ -361,6 +395,10 @@ def verificar_producto():
 
 @app.route('/buscar_cliente', methods=['POST'])
 def buscar_cliente():
+    # Permitir a administradores y empleados buscar clientes (necesario para finalizar compra)
+    if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
+        return jsonify({"existe": False, "mensaje": "Acceso no autorizado"}), 401
+
     data = request.get_json()
     cedula = data.get("cedula")
 
@@ -373,15 +411,19 @@ def buscar_cliente():
 
     return jsonify({
         "existe": True,
-        "nombre": cliente.nombre_completo,  # Asegúrate de que este sea el campo correcto
+        "nombre": cliente.nombre_completo,
         "correo": cliente.correo
     })
-    
+
 @app.route('/finalizar_compra', methods=['POST'])
 def finalizar_compra():
+    # Permitir a administradores y empleados finalizar una compra
+    if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
+        return jsonify({"error": "Acceso no autorizado para finalizar compra"}), 403
+
     try:
         vendedor_id = session.get('id_usuario')
-        print("Vendedor ID (desde sesión):", vendedor_id)
+        print("ID del Vendedor (desde sesión):", vendedor_id)
 
         vendedor = Usuario.query.filter_by(id_usuario=vendedor_id).first()
         if not vendedor:
@@ -389,7 +431,7 @@ def finalizar_compra():
             return jsonify({"error": "Vendedor no válido"}), 400
 
         data = request.get_json()
-        print("Data recibida:", data)
+        print("Datos recibidos:", data)
 
         cliente_data = data.get("cliente")
         carrito_data = data.get("carrito")
@@ -405,7 +447,7 @@ def finalizar_compra():
                 cedula=cliente_data["cedula"]
             )
             db.session.add(cliente)
-            db.session.commit()
+            db.session.commit() # Hacer commit del nuevo cliente si se añadió
 
         folio_venta = f"F{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
         fecha_actual = datetime.now().date()
@@ -453,13 +495,12 @@ def finalizar_compra():
             producto = detalle["producto"]
             cantidad = detalle["cantidad"]
             precio_unitario = detalle["precio_unitario"]
-            total_producto = detalle["total_producto"]
 
             venta_detalle = VentaDetalle(
                 id_venta=venta_cabecera.id_venta,
                 id_producto=producto.id_producto,
                 cantidad=cantidad,
-                precio=precio_unitario  # aquí va el precio unitario
+                precio=precio_unitario
             )
 
             db.session.add(venta_detalle)
@@ -473,7 +514,6 @@ def finalizar_compra():
 
         # Generar y enviar factura
         pdf_path = generar_pdf(cliente, registros, folio_venta, total_venta)
-        # Después de hacer commit y generar el PDF
 
         # Aquí preparas el diccionario con los datos que necesitas para el correo
         venta_info = {
@@ -491,29 +531,45 @@ def finalizar_compra():
         return jsonify({"mensaje": "✅ Compra finalizada, registro guardado y factura enviada al correo."})
 
     except Exception as e:
+        db.session.rollback() # Hacer rollback en caso de error para prevenir commits parciales
         print("Error en /finalizar_compra:", e)
-        return jsonify({"mensaje": "Error interno del servidor."}), 500
+        return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
+
 @app.route('/api/ventas')
 def api_ventas():
-    ventas = (
-        db.session.query(
-            VentaCabecera.fecha,
-            VentaCabecera.hora,
-            VentaCabecera.folio,
-            Cliente.nombre_completo.label('nombre_cliente'),
-            Cliente.cedula.label('cedula_cliente'),
-            Producto.id_producto.label('codigo_producto'),
-            Producto.nombre_producto.label('nombre_producto'),
-            VentaDetalle.cantidad,
-            VentaDetalle.total_producto.label('total'),
-            Usuario.nombre.label('vendedor')
-        )
-        .join(Cliente, VentaCabecera.id_cliente == Cliente.id_cliente)
-        .join(Usuario, VentaCabecera.id_vendedor == Usuario.id_usuario)
-        .join(VentaDetalle, VentaDetalle.id_venta == VentaCabecera.id_venta)
-        .join(Producto, VentaDetalle.id_producto == Producto.id_producto)
-        .all()
-    )
+    # Permitir a administradores y empleados ver los datos de ventas
+    if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
+        return jsonify({"error": "Acceso no autorizado para ver ventas"}), 403
+
+    # Obtener el ID del usuario y su rol de la sesión
+    user_id = session.get('id_usuario')
+    user_rol = session.get('tipo')
+
+    # Iniciar la consulta base
+    query = db.session.query(
+        VentaCabecera.fecha,
+        VentaCabecera.hora,
+        VentaCabecera.folio,
+        Cliente.nombre_completo.label('nombre_cliente'),
+        Cliente.cedula.label('cedula_cliente'),
+        Producto.id_producto.label('codigo_producto'),
+        Producto.nombre_producto.label('nombre_producto'),
+        VentaDetalle.cantidad,
+        VentaDetalle.precio.label('precio_unitario_detalle'), # Precio unitario de la venta
+        (VentaDetalle.cantidad * VentaDetalle.precio).label('total_detalle_producto'), # Total por artículo de producto
+        VentaCabecera.total.label('total_venta_cabecera'), # Total de la venta completa
+        Usuario.nombre.label('vendedor')
+    ) \
+    .join(Cliente, VentaCabecera.id_cliente == Cliente.id_cliente) \
+    .join(Usuario, VentaCabecera.id_vendedor == Usuario.id_usuario) \
+    .join(VentaDetalle, VentaDetalle.id_venta == VentaCabecera.id_venta) \
+    .join(Producto, VentaDetalle.id_producto == Producto.id_producto)
+
+    # Si el usuario es un empleado, filtrar por sus propias ventas
+    if user_rol == 'empleado':
+        query = query.filter(VentaCabecera.id_vendedor == user_id)
+
+    ventas = query.all()
 
     resultado = []
     for v in ventas:
@@ -526,7 +582,9 @@ def api_ventas():
             'codigo_producto': v.codigo_producto,
             'nombre_producto': v.nombre_producto,
             'cantidad': v.cantidad,
-            'total': float(v.total),
+            'precio_unitario': float(v.precio_unitario_detalle),
+            'total_detalle_producto': float(v.total_detalle_producto),
+            'total_venta_completa': float(v.total_venta_cabecera),
             'vendedor': v.vendedor
         })
 
@@ -577,8 +635,6 @@ def enviar_factura(destinatario, archivo_pdf, venta_info):
     """
 
 
-
-
     msg = MIMEMultipart("alternative")
     msg["From"] = "Microchip <marcelaquintero973@gmail.com>"
     msg["To"] = destinatario
@@ -596,7 +652,7 @@ def enviar_factura(destinatario, archivo_pdf, venta_info):
 
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
-        server.login(remitente, clave)  # ← CORREGIDO
+        server.login(remitente, clave)
         server.send_message(msg)
         server.quit()
         print(f"✅ Correo enviado a {destinatario}")
@@ -619,18 +675,19 @@ def generar_pdf(cliente, compras, folio, total_venta):
     <p>Cédula: {cliente.cedula}</p>
     <hr>
     <table border="1" cellspacing="0" cellpadding="4">
-        <tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr>
+        <tr><th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Total</th></tr>
     """
-    for nombre, cantidad, precio in compras:
-        total = cantidad * precio
-        html += f"<tr><td>{nombre}</td><td>{cantidad}</td><td>${precio}</td><td>${total}</td></tr>"
+    for nombre, cantidad, precio_unitario in compras:
+        total_producto = cantidad * precio_unitario
+        html += f"<tr><td>{nombre}</td><td>{cantidad}</td><td>${precio_unitario:.2f}</td><td>${total_producto:.2f}</td></tr>"
 
-    html += f"<tr><td colspan='3'><strong>Total</strong></td><td><strong>${total_venta}</strong></td></tr>"
+    html += f"<tr><td colspan='3'><strong>Total de la Compra</strong></td><td><strong>${total_venta:.2f}</strong></td></tr>"
     html += "</table>"
 
     filename = f"factura_{cliente.cedula}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
     filepath = os.path.join("facturas", filename)
 
+    # Asegúrate de que la ruta de wkhtmltopdf sea correcta en tu entorno
     config = pdfkit.configuration(wkhtmltopdf=r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe')
 
     pdfkit.from_string(html, filepath, configuration=config)
