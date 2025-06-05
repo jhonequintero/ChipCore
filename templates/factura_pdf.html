@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boleta de Pago - MicroChip</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .contenedor-factura {
+            width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .seccion-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
+  
+        .informacion-empresa {
+            text-align: center;
+            font-size: 0.85em;
+            line-height: 1.3;
+        }
+
+        .informacion-empresa p {
+            margin: 0;
+        }
+
+        .detalles-factura {
+            text-align: right;
+            font-size: 0.85em;
+            line-height: 1.3;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+
+        .titulo-factura {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .detalles-factura p {
+            margin: 0;
+        }
+
+        .valor-detalle {
+            font-weight: normal;
+        }
+
+        .informacion-cliente-vendedor {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .bloque-info-cliente,
+        .bloque-pago-vendedor {
+            width: 48%; 
+            border: 1px solid #eee;
+            padding: 10px;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .bloque-info-cliente p,
+        .informacion-pago p,
+        .informacion-vendedor p {
+            margin: 0;
+        }
+
+        .valor-info {
+            font-weight: bold;
+        }
+
+        .bloque-pago-vendedor {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .informacion-pago,
+        .informacion-vendedor,
+        .informacion-fecha-factura {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .informacion-pago:last-child,
+        .informacion-vendedor:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .informacion-fecha-factura {
+            border-bottom: none;
+            margin-top: auto;
+        }
+
+        .detalles-documento {
+            margin-bottom: 20px;
+        }
+
+        .tabla-articulos {
+            margin-bottom: 20px;
+        }
+
+        .tabla-articulos table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+
+        .tabla-articulos th,
+        .tabla-articulos td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .tabla-articulos th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .seccion-resumen {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .totales-resumen {
+            width: 50%; 
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            border: 1px solid #eee;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .item-resumen {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-resumen:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .item-resumen p {
+            margin: 0;
+        }
+
+        .total-final {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .detalles-impuestos-retenciones {
+            display: flex;
+            justify-content: flex-end; 
+            margin-bottom: 20px;
+                  }
+
+
+        .notas-pie-pagina {
+            font-size: 0.9em;
+            line-height: 1.5;
+            width: 100%;
+        }
+
+        .notas-pie-pagina p {
+            margin: 0;
+        }
+
+        .valor-en-letras {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="contenedor-factura">
+        <div class="encabezado">
+            <div class="seccion-logo">
+                 <img src="{{ url_for('static', filename='Captura_de_pantalla_2025-04-03_081700-removebg-preview.png') }}" alt="Logo MicroChip" class="logo">
+                </div>
+            <div class="informacion-empresa">
+                <p>MicroChip S.A.S.</p>
+                <p>NIT: 830513441</p>
+                <p>Direccion: CL 35 46 63 Cúcuta Colombia</p>
+                <p>Tel: (054) 4801515</p>
+                </div>
+            <div class="detalles-factura">
+                <p class="titulo-factura">FACTURA ELECTRONICA</p>
+                <p>Fecha Generación cambia: <span class="valor-detalle">{{ fecha_generacion }}</span></p>
+                <p>Página: <span class="valor-detalle">Page 1 of 1</span></p>
+            </div>
+        </div>
+
+        <div class="informacion-cliente-vendedor">
+            <div class="bloque-info-cliente">
+                <p>Cliente: <span class="valor-info">{{ nombre_cliente }}</span></p>
+                <p>Contacto: <span class="valor-info">{{ contacto_cliente }}</span></p>
+                <p>C.C. <span class="valor-info">{{ cc_cliente }}</span></p>
+                <p>Ciudad: <span class="valor-info">Cucuta</span></p>
+                </div>
+            <div class="bloque-pago-vendedor">
+                <div class="informacion-pago">
+                    <p>Medio de Pago: <span class="valor-info">-</span></p>
+                    <p>Forma de Pago: <span class="valor-info">Pago en efectivo</span></p>
+                </div>
+                <div class="informacion-vendedor">
+                    <p>Vendedor: <span class="valor-info">{{ vendedor }}</span></p>
+                </div>
+                <div class="informacion-fecha-factura">
+                     <p>Fecha vcto: <span class="valor-info">{{ fecha_vencimiento }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="detalles-documento">
+            </div>
+
+        <div class="tabla-articulos">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID/ REFERENCIA</th>
+                        <th>DESCRIPCION</th>
+                        <th>CANT.</th>
+                        <th>PRECIO UNIT</th>
+                        <th>VALOR TOTAL</th>
+                        </tr>
+                </thead>
+                <!-- el tbody cambia ssegun lo que compre  -->
+                <tbody>
+                    {% for item in items_factura %}
+                    <tr>
+                        <td>{{ item.referencia }}</td>
+                        <td>{{ item.descripcion }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>{{ item.precio_unit }}</td>
+                        <td>{{ item.valor_total_item }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="seccion-resumen">
+            <div class="totales-resumen">
+                <div class="item-resumen">
+                    <p>DESCUENTOS</p>
+                    <p class="valor-total">{{ descuentos }}</p>
+                </div>
+                <div class="item-resumen total-final">
+                    <p>TOTAL</p>
+                    <p class="valor-total">{{ total_final }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="detalles-impuestos-retenciones">
+            <div class="notas-pie-pagina">
+                <p>Valor letras: <span class="valor-en-letras">{{ valor_letras }}</span></p>
+                <p>Notas: <span class="texto-notas">{{ notas }}</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

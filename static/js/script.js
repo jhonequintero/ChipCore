@@ -46,7 +46,7 @@ document.getElementById("formLogin").addEventListener("submit", async function (
     const respuesta = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, contrasena })  // sin tilde aquí
+        body: JSON.stringify({ correo, contrasena }) 
     });
 
     const data = await respuesta.json();
@@ -61,7 +61,7 @@ document.getElementById("formLogin").addEventListener("submit", async function (
 
         const mensaje = document.createElement("p");
         mensaje.classList.add("error");
-        mensaje.id = "mensaje-error"; // 👈 para eliminar después
+        mensaje.id = "mensaje-error"; // Guarda el mensaje para eliminar después
         mensaje.textContent = data.error;
         document.querySelector("#formLogin").appendChild(mensaje);
 

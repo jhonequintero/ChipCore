@@ -9,21 +9,43 @@ import threading
 
 # Librerías para PDF y correo
 import pdfkit
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
-from email.mime.text import MIMEText
-
+# REMOVED: smtplib, email.mime.multipart, email.mime.application, email.mime.text
+# ADDED: Flask-Mail
+from flask_mail import Mail, Message
+import io # Necesario para manejar el PDF en memoria para Flask-Mail
 
 app = Flask(__name__)
 app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
-# config = pdfkit.configuration(wkhtmltopdf=r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe')
+
+# --- INICIO DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
+
+# Configuración de wkhtmltopdf: se adapta al sistema operativo
+if os.name == 'nt':
+    WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
+else:
+    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf' # O '/usr/bin/wkhtmltopdf'
+
+WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
+config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH) # Renombrado a config_pdf para evitar conflicto
+
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'marcelaquintero973@gmail.com'
+app.config['MAIL_PASSWORD'] = 'dzarsqoqqhxpqcub' # ¡ADVERTENCIA: Usa una contraseña de aplicación de Gmail!
+app.config['MAIL_DEFAULT_SENDER'] = 'marcelaquintero973@gmail.com'
+
+mail = Mail(app) # Inicializa Flask-Mail con la aplicación
+
+# --- FIN DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://chipcore_user:QJ4oZIaYL90TkcEsX2OewT7eFunk4REv@dpg-d0l3el7fte5s73962vmg-a.oregon-postgres.render.com:5432/base_datos_chipcore"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# --- Tus modelos SQLAlchemy (Usuario, Producto, Cliente, Carrito, VentaCabecera, VentaDetalle) permanecen igual ---
 class Usuario(db.Model):
     __tablename__ = 'usuario'
     codigo = db.Column(db.Integer, primary_key=True)
@@ -87,6 +109,8 @@ class VentaDetalle(db.Model):
     venta = db.relationship('VentaCabecera', backref='detalles')
     producto = db.relationship('Producto')
 
+# --- Fin de tus modelos SQLAlchemy ---
+
 
 with app.app_context():
     db.create_all()
@@ -112,13 +136,13 @@ with app.app_context():
             db.session.add(nuevo_admin)
     db.session.commit()
 
+# --- Rutas de autenticación y paneles (permanecen mayormente iguales) ---
 @app.route('/')
 def inicio():
     return render_template('index.html', error=None)
 
 @app.route('/login', methods=['POST'])
 def login():
-    # Soporta tanto JSON como form data (por si se prueba con formulario tradicional)
     if request.is_json:
         data = request.get_json()
     else:
@@ -143,7 +167,6 @@ def login():
             elif usuario.rol == 'empleado':
                 return jsonify(success=True, redirect=url_for('panel_trabajador'))
             else:
-                # Si hay otros roles, redirigir aquí o devolver error
                 return jsonify(success=False, error="Rol de usuario no reconocido", campo="ambos")
         else:
             return jsonify(success=False, error="Contraseña incorrecta", campo="contrasena")
@@ -166,7 +189,7 @@ def panel_admin():
 
         empleados = Usuario.query.filter_by(rol='empleado').all()
         productos = Producto.query.all()
-        facturas = VentaCabecera.query.all() # Para el panel de admin, si necesita ver todas las facturas
+        facturas = VentaCabecera.query.all()
 
         return render_template(
             'panel_admin.html',
@@ -180,7 +203,6 @@ def panel_admin():
 
 @app.route('/registrar_empleado', methods=['POST'])
 def registrar_empleado():
-    # Solo administradores pueden registrar empleados
     if 'usuario' in session and session.get('tipo') == 'administrador':
         cedula = request.form.get('id_usuario', '').strip()
         nombre = request.form.get('nombre', '').strip()
@@ -200,7 +222,6 @@ def registrar_empleado():
         if Usuario.query.filter_by(correo=correo).first():
             return jsonify(success=False, error="El correo ya está registrado.")
 
-        # Obtener el último número del codigo_empleado correctamente
         from sqlalchemy import func, cast, Integer
 
         ultimo_num = db.session.query(
@@ -236,7 +257,6 @@ def registrar_empleado():
 
 @app.route('/panel_trabajador')
 def panel_trabajador():
-    # Acceso para empleados
     if 'usuario' in session and session.get('tipo') == 'empleado':
         usuario = Usuario.query.filter_by(correo=session['usuario']).first()
         if usuario:
@@ -248,11 +268,8 @@ def panel_trabajador():
                 "rol": usuario.rol,
                 "codigo_empleado": usuario.codigo_empleado
             }
-            # Los productos y las ventas se pasan para que el trabajador pueda verlos
             productos = Producto.query.all()
-            # Para el trabajador, solo se mostrarán sus propias ventas en el panel principal
             facturas = VentaCabecera.query.filter_by(id_vendedor=usuario.id_usuario).all()
-
 
             return render_template('panel_trabajador.html',
                                    datos=datos,
@@ -263,13 +280,12 @@ def panel_trabajador():
 
 @app.route('/usuario/<int:id_usuario>/cambiar_estado', methods=['POST'])
 def cambiar_estado_usuario(id_usuario):
-    # Solo administradores pueden cambiar el estado de los usuarios
     if 'usuario' in session and session.get('tipo') == 'administrador':
         usuario = Usuario.query.filter_by(id_usuario=id_usuario).first()
         if not usuario:
             return jsonify({'success': False, 'msg': 'Usuario no encontrado'}), 404
 
-        usuario.estado = not usuario.estado  # cambia el estado
+        usuario.estado = not usuario.estado
         db.session.commit()
         return jsonify({'success': True, 'nuevo_estado': usuario.estado})
     return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
@@ -277,7 +293,6 @@ def cambiar_estado_usuario(id_usuario):
 
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
-    # Solo administradores pueden agregar productos
     if 'usuario' in session and session.get('tipo') == 'administrador':
         nombre = request.form['nombre_producto']
         descripcion = request.form['descripcion_producto']
@@ -300,8 +315,6 @@ def agregar_producto():
 
 @app.route('/ver_productos')
 def ver_productos():
-    # Esta ruta es para que el administrador vea los productos.
-    # Para el trabajador, se manejará directamente en su panel.
     if 'usuario' in session and session.get('tipo') == 'administrador':
         usuario = Usuario.query.filter_by(correo=session['usuario']).first()
         productos = Producto.query.all()
@@ -317,9 +330,6 @@ def ver_productos():
         return render_template('panel_admin.html', datos=datos, vista='productos', productos=productos, usuarios=empleados)
     return redirect(url_for('inicio'))
 
-# Nueva ruta para que el trabajador vea los productos (opcional, si quieres una vista dedicada)
-# Si el trabajador solo los ve dentro de su panel principal, no es estrictamente necesaria.
-# Sin embargo, si quieres que 'ver_productos' sea una acción específica para el trabajador, puedes usarla.
 @app.route('/ver_productos_trabajador')
 def ver_productos_trabajador():
     if 'usuario' in session and session.get('tipo') == 'empleado':
@@ -339,7 +349,6 @@ def ver_productos_trabajador():
 
 @app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
-    # Solo administradores pueden actualizar productos
     if 'usuario' in session and session.get('tipo') == 'administrador':
         id_producto = request.form.get('id_producto')
         nombre = request.form.get('nombre_producto')
@@ -361,7 +370,6 @@ def actualizar_producto():
 
 @app.route('/verificar_producto', methods=['POST'])
 def verificar_producto():
-    # Permitir a administradores y empleados verificar productos
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
         return jsonify({"existe": False, "mensaje": "Acceso no autorizado"}), 401
 
@@ -395,7 +403,6 @@ def verificar_producto():
 
 @app.route('/buscar_cliente', methods=['POST'])
 def buscar_cliente():
-    # Permitir a administradores y empleados buscar clientes (necesario para finalizar compra)
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
         return jsonify({"existe": False, "mensaje": "Acceso no autorizado"}), 401
 
@@ -417,7 +424,6 @@ def buscar_cliente():
 
 @app.route('/finalizar_compra', methods=['POST'])
 def finalizar_compra():
-    # Permitir a administradores y empleados finalizar una compra
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
         return jsonify({"error": "Acceso no autorizado para finalizar compra"}), 403
 
@@ -454,7 +460,7 @@ def finalizar_compra():
         hora_actual = datetime.now().time()
 
         total_venta = 0
-        detalles = []
+        detalles_compra = [] # Renombrado para evitar conflicto con el import 'detalles' de email
 
         # Verificar stock antes de modificar
         for item in carrito_data:
@@ -471,7 +477,7 @@ def finalizar_compra():
             total_producto = cantidad_comprada * producto.precio_producto
             total_venta += total_producto
 
-            detalles.append({
+            detalles_compra.append({ # Usar el nuevo nombre 'detalles_compra'
                 "producto": producto,
                 "cantidad": cantidad_comprada,
                 "precio_unitario": producto.precio_producto,
@@ -488,13 +494,13 @@ def finalizar_compra():
             total=total_venta
         )
         db.session.add(venta_cabecera)
-        db.session.flush()  # Para obtener id_venta sin hacer commit aún
+        db.session.flush()
 
         # Crear detalles y descontar stock
-        for detalle in detalles:
-            producto = detalle["producto"]
-            cantidad = detalle["cantidad"]
-            precio_unitario = detalle["precio_unitario"]
+        for detalle_item in detalles_compra: # Iterar sobre 'detalles_compra'
+            producto = detalle_item["producto"]
+            cantidad = detalle_item["cantidad"]
+            precio_unitario = detalle_item["precio_unitario"]
 
             venta_detalle = VentaDetalle(
                 id_venta=venta_cabecera.id_venta,
@@ -505,18 +511,40 @@ def finalizar_compra():
 
             db.session.add(venta_detalle)
 
-            producto.cantidad_producto -= cantidad  # descontar stock
+            producto.cantidad_producto -= cantidad
 
         db.session.commit()
 
-        # Preparar datos para la factura (nombre, cantidad, precio unitario)
-        registros = [(d["producto"].nombre_producto, d["cantidad"], d["precio_unitario"]) for d in detalles]
+        # --- PREPARACIÓN DE DATOS PARA PDF Y CORREO ---
+        # Datos para la plantilla del PDF
+        datos_para_pdf = {
+            'nombre_cliente': cliente.nombre_completo,
+            'contacto_cliente': cliente.correo, # Usar correo como contacto para el ejemplo
+            'cc_cliente': cliente.cedula,
+            'ciudad_cliente': 'N/A', # Si no tienes esta información, puedes omitirla o poner un valor por defecto
+            'fecha_generacion': fecha_actual.strftime('%d/%m/%Y %H:%M:%S %p.'),
+            'fecha_vencimiento': (fecha_actual).strftime('%Y/%m/%d'), # O la fecha de vencimiento real
+            'vendedor': vendedor.nombre,
+            'forma_pago': 'Contado', # O la forma de pago real de tu sistema
+            'items_factura': [
+                {'referencia': d["producto"].id_producto,
+                 'descripcion': d["producto"].nombre_producto,
+                 'cantidad': d["cantidad"],
+                 'precio_unit': f"${d['precio_unitario']:.2f}", # Formato de moneda
+                 'valor_total_item': f"${d['total_producto']:.2f}"}
+                for d in detalles_compra
+            ],
+            'descuentos': '$0.00', # Si tienes descuentos, agrégalos aquí
+            'total_final': f"${total_venta:.2f}",
+            'valor_letras': convertir_a_letras(total_venta), # Implementa esta función
+            'notas': 'Gracias por su compra en Microchip.'
+        }
 
-        # Generar y enviar factura
-        pdf_path = generar_pdf(cliente, registros, folio_venta, total_venta)
+        # Generar el PDF y obtenerlo como bytes en memoria
+        pdf_bytes = generar_pdf(datos_para_pdf)
 
         # Aquí preparas el diccionario con los datos que necesitas para el correo
-        venta_info = {
+        venta_info_correo = {
             "nombre_cliente": cliente.nombre_completo,
             "fecha": fecha_actual.strftime('%Y-%m-%d'),
             "hora": hora_actual.strftime('%H:%M:%S'),
@@ -526,26 +554,47 @@ def finalizar_compra():
         }
 
         # Llamas a la función que envía la factura de forma asíncrona (en otro hilo)
-        enviar_factura_async(cliente.correo, pdf_path, venta_info)
+        # Ahora pasamos los bytes del PDF directamente
+        enviar_factura_async(cliente.correo, pdf_bytes, venta_info_correo)
 
         return jsonify({"mensaje": "✅ Compra finalizada, registro guardado y factura enviada al correo."})
 
     except Exception as e:
-        db.session.rollback() # Hacer rollback en caso de error para prevenir commits parciales
+        db.session.rollback()
         print("Error en /finalizar_compra:", e)
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
 
+# --- Función auxiliar para convertir números a letras (ejemplo básico) ---
+def convertir_a_letras(numero):
+    """
+    Función de ejemplo para convertir un número a letras.
+    Para una implementación robusta, considera usar una librería como 'num2words'.
+    """
+    if numero == 0:
+        return "CERO PESOS"
+    # Implementación muy básica, expande esto según tus necesidades
+    unidades = ["", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"]
+    decenas = ["", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"]
+    centenas = ["", "CIEN", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"]
+
+    if numero < 10:
+        return unidades[int(numero)] + " PESOS M/CTE *******"
+    elif numero < 100 and numero >= 10:
+        return decenas[int(numero/10)] + (" Y " + unidades[int(numero%10)] if numero%10 != 0 else "") + " PESOS M/CTE *******"
+    elif numero < 1000 and numero >= 100:
+        return centenas[int(numero/100)] + " " + convertir_a_letras(numero % 100).replace(" PESOS M/CTE *******", "") + " PESOS M/CTE *******"
+    # Esto es solo un placeholder, la implementación completa es extensa
+    return "VALOR EN LETRAS NO IMPLEMENTADO PARA ESTE RANGO"
+
+
 @app.route('/api/ventas')
 def api_ventas():
-    # Permitir a administradores y empleados ver los datos de ventas
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
         return jsonify({"error": "Acceso no autorizado para ver ventas"}), 403
 
-    # Obtener el ID del usuario y su rol de la sesión
     user_id = session.get('id_usuario')
     user_rol = session.get('tipo')
 
-    # Iniciar la consulta base
     query = db.session.query(
         VentaCabecera.fecha,
         VentaCabecera.hora,
@@ -555,9 +604,9 @@ def api_ventas():
         Producto.id_producto.label('codigo_producto'),
         Producto.nombre_producto.label('nombre_producto'),
         VentaDetalle.cantidad,
-        VentaDetalle.precio.label('precio_unitario_detalle'), # Precio unitario de la venta
-        (VentaDetalle.cantidad * VentaDetalle.precio).label('total_detalle_producto'), # Total por artículo de producto
-        VentaCabecera.total.label('total_venta_cabecera'), # Total de la venta completa
+        VentaDetalle.precio.label('precio_unitario_detalle'),
+        (VentaDetalle.cantidad * VentaDetalle.precio).label('total_detalle_producto'),
+        VentaCabecera.total.label('total_venta_cabecera'),
         Usuario.nombre.label('vendedor')
     ) \
     .join(Cliente, VentaCabecera.id_cliente == Cliente.id_cliente) \
@@ -565,7 +614,6 @@ def api_ventas():
     .join(VentaDetalle, VentaDetalle.id_venta == VentaCabecera.id_venta) \
     .join(Producto, VentaDetalle.id_producto == Producto.id_producto)
 
-    # Si el usuario es un empleado, filtrar por sus propias ventas
     if user_rol == 'empleado':
         query = query.filter(VentaCabecera.id_vendedor == user_id)
 
@@ -590,109 +638,67 @@ def api_ventas():
 
     return jsonify(resultado)
 
+# ---
+### **Funciones de Correo y PDF Actualizadas**
 
-def enviar_factura(destinatario, archivo_pdf, venta_info):
-    remitente = "marcelaquintero973@gmail.com"
-    clave = "dzarsqoqqhxpqcub"
-    asunto = "Factura de tu compra en Michochip"
+# Ahora estas funciones son mucho más limpias y aprovechan Flask-Mail y las plantillas Jinja2.
 
-    cuerpo_texto = f"""
-    Hola {venta_info['nombre_cliente']},
-
-    Gracias por tu compra en Michochip.
-
-    Adjuntamos la factura correspondiente a tu pedido realizado el {venta_info['fecha']} a las {venta_info['hora']}.
-    Número de factura (Folio): {venta_info['folio']}
-    Total de la compra: ${venta_info['total']:.2f}
-    Atendido por: {venta_info['vendedor']}
-
-    Si tienes alguna duda o necesitas ayuda adicional, no dudes en contactarnos.
-
-    ¡Gracias por preferirnos!
-
-    Michochip - Soluciones tecnológicas
-    """
-
-    cuerpo_html = f"""
-    <html>
-        <body style="font-family: Arial, sans-serif; color: #333;">
-            <p>Hola <strong>{venta_info['nombre_cliente']}</strong>,</p>
-            <p>Gracias por tu compra en <strong>Michochip</strong>.</p>
-            <p>Adjuntamos la factura correspondiente a tu pedido.</p>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li><strong>Fecha:</strong> {venta_info['fecha']}</li>
-                <li><strong>Hora:</strong> {venta_info['hora']}</li>
-                <li><strong>Folio:</strong> {venta_info['folio']}</li>
-                <li><strong>Total:</strong> ${venta_info['total']:.2f}</li>
-                <li><strong>Vendedor:</strong> {venta_info['vendedor']}</li>
-            </ul>
-            <p>Si tienes alguna duda o necesitas ayuda adicional, no dudes en contactarnos.</p>
-            <br>
-            <p>¡Gracias por preferirnos!</p>
-            <p style="font-size: 0.9em; color: #888;">Michochip - Soluciones tecnológicas</p>
-        </body>
-    </html>
-    """
-
-
-    msg = MIMEMultipart("alternative")
-    msg["From"] = "Microchip <marcelaquintero973@gmail.com>"
-    msg["To"] = destinatario
-    msg["Subject"] = asunto
-    msg["Reply-To"] = remitente
-
-    msg.attach(MIMEText(cuerpo_texto, "plain"))
-    msg.attach(MIMEText(cuerpo_html, "html"))
+# ```python
+# --- Función para enviar el correo (ACTUALIZADA) ---
+# Ahora recibe `pdf_data` que son los bytes del PDF, no una ruta de archivo.
+def enviar_factura(destinatario, pdf_data, venta_info):
+    asunto = "Factura de tu compra en Microchip"
 
     try:
-        with open(archivo_pdf, "rb") as f:
-            parte = MIMEApplication(f.read(), _subtype="pdf")
-            parte.add_header("Content-Disposition", "attachment", filename=os.path.basename(archivo_pdf))
-            msg.attach(parte)
+        # TODO LO RELACIONADO CON FLASK-MAIL DEBE ESTAR DENTRO DE ESTE BLOQUE
+        with app.app_context():
+            # 1. Renderizar el HTML para el cuerpo del correo
+            cuerpo_html_email = render_template('email_factura.html', venta_info=venta_info)
+            print(f"DEBUG: HTML del correo generado para {destinatario}")
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(remitente, clave)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Correo enviado a {destinatario}")
+            # 2. Crear el objeto Message
+            msg = Message(subject=asunto, recipients=[destinatario])
+            msg.html = cuerpo_html_email
+            print("DEBUG: Mensaje de Flask-Mail creado.")
+
+            # 3. Adjuntar el PDF
+            msg.attach(
+                filename=f"factura_{venta_info['folio']}.pdf",
+                content_type="application/pdf",
+                data=pdf_data
+            )
+            print("DEBUG: PDF adjuntado al mensaje.")
+
+            # 4. Enviar el correo
+            mail.send(msg)
+            print(f"✅ Correo enviado a {destinatario}")
+
     except Exception as e:
-        print("❌ Error al enviar correo:", e)
+        print(f"❌ Error al enviar correo a {destinatario}: {e}")
+        print(f"Error detallado: {e}") # Para obtener más información en caso de fallo
 
-# Función para llamar enviar_factura en un hilo separado
-def enviar_factura_async(destinatario, archivo_pdf, venta_info):
-    hilo = threading.Thread(target=enviar_factura, args=(destinatario, archivo_pdf, venta_info))
+# Función para llamar enviar_factura en un hilo separado (igual, pero ahora recibe bytes)
+def enviar_factura_async(destinatario, pdf_data, venta_info):
+    hilo = threading.Thread(target=enviar_factura, args=(destinatario, pdf_data, venta_info))
     hilo.start()
 
 
-def generar_pdf(cliente, compras, folio, total_venta):
-    os.makedirs("facturas", exist_ok=True)
+# --- Función para generar PDF (ACTUALIZADA) ---
+# Ahora recibe un diccionario de datos que se pasará directamente a la plantilla.
+# Devuelve los bytes del PDF, no guarda un archivo en disco.
+def generar_pdf(datos_para_pdf):
+    # Renderiza el HTML del PDF usando la plantilla Jinja2
+    with app.app_context(): # Necesario para usar render_template en un hilo.
+        # Es importante pasar `request.url_root` si tu HTML del PDF usa `url_for('static', ...)`
+        # para que WeasyPrint pueda encontrar las imágenes/CSS.
+        html_string = render_template('factura_pdf.html', **datos_para_pdf) # Desempaqueta el diccionario
 
-    html = f"""
-    <h1>Factura - Folio {folio}</h1>
-    <p>Cliente: {cliente.nombre_completo}</p>
-    <p>Correo: {cliente.correo}</p>
-    <p>Cédula: {cliente.cedula}</p>
-    <hr>
-    <table border="1" cellspacing="0" cellpadding="4">
-        <tr><th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Total</th></tr>
-    """
-    for nombre, cantidad, precio_unitario in compras:
-        total_producto = cantidad * precio_unitario
-        html += f"<tr><td>{nombre}</td><td>{cantidad}</td><td>${precio_unitario:.2f}</td><td>${total_producto:.2f}</td></tr>"
+    # Genera el PDF desde el string HTML y lo guarda en un buffer de bytes
+    # Usamos `configuration=config_pdf` que ya definimos globalmente.
+    pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
+    return pdf_bytes # Retorna los bytes del PDF
 
-    html += f"<tr><td colspan='3'><strong>Total de la Compra</strong></td><td><strong>${total_venta:.2f}</strong></td></tr>"
-    html += "</table>"
-
-    filename = f"factura_{cliente.cedula}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-    filepath = os.path.join("facturas", filename)
-
-    # Asegúrate de que la ruta de wkhtmltopdf sea correcta en tu entorno
-    config = pdfkit.configuration(wkhtmltopdf=r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe')
-
-    pdfkit.from_string(html, filepath, configuration=config)
-    return filepath
-
+# --- Tu ruta de logout ---
 @app.route('/logout')
 def logout():
     session.clear()
