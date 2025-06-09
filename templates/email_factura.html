@@ -6,48 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notificación de Factura Electrónica</title>
     <style>
-        /* Estilos generales para el cuerpo del email */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f4f4f4;
-            /* Eliminar display: flex; y sus propiedades de centrado aquí,
-               ya que se manejan con el nuevo div exterior y margin: auto */
+            /* Añade text-align: center para centrar el contenido a nivel de bloque en clientes de correo antiguos */
+            text-align: center; 
         }
 
-        /* Contenedor exterior que abarca todo el ancho y usa text-align para centrar el bloque principal */
-        .outer-container {
-            width: 100%; /* Ocupa todo el ancho disponible */
-            text-align: center; /* Centra los elementos de bloque con width definido */
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Contenedor principal del email */
         .contenedor-email {
-            width: 600px; /* Ancho fijo para el contenido del email */
+            width: 600px;
             background-color: #fff;
             padding: 30px;
             border-top: 5px solid #000080;
             border-bottom: 5px solid #000080;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
             line-height: 1.5;
             color: #333;
-            /* Centra este bloque dentro del 'outer-container' */
-            margin: 0 auto;
-            /* Por defecto, el texto dentro de este contenedor se alineará a la izquierda,
-               lo que suele ser más legible para un correo.
-               Si quieres todo el texto centrado, cambia a 'center'. */
-            text-align: left; 
-        }
-
-        /* Estilos para centrar elementos de texto/bloque específicos dentro de .contenedor-email */
-        .nombre-cliente,
-        .numero-factura,
-        .valor-total,
-        .boton-ver-factura {
-            text-align: center; /* Centra solo el texto o el contenido de estos elementos */
+            /* Centra el contenedor principal */
+            margin: 0 auto; 
         }
 
         .linea-superior,
@@ -55,33 +34,76 @@
             width: 80%;
             height: 2px;
             background-color: #000080;
-            margin: 20px auto; /* Centra estas líneas */
+            margin: 20px auto;
         }
 
         .saludo {
             margin-bottom: 25px;
             font-size: 1.1em;
-            /* text-align: left; /* Ya heredado de .contenedor-email, pero puedes forzarlo aquí si quieres */
         }
 
-        .nombre-cliente p,
-        .numero-factura p,
-        .valor-total p {
-            margin: 0; /* Asegura que no haya márgenes extra dentro de estos divs */
+        .nombre-cliente {
+            background-color: #e0e0e0;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
         }
 
-        .mensaje-factura,
-        .nota-xml-pdf,
-        .inconsistencia-contacto,
-        .validacion-siesa,
-        .firma-siesa {
+        .mensaje-factura {
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+
+        .numero-factura {
+            background-color: #e0e0e0;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .valor-total {
+            background-color: #e0e0e0;
+            padding: 10px 0;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 1.4em;
+        }
+
+        .boton-ver-factura {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        .boton-ver-factura:hover {
+            background-color: #0056b3;
+        }
+
+        .nota-xml-pdf {
             font-size: 0.9em;
             margin-bottom: 20px;
-            /* text-align: left; /* Ya heredado de .contenedor-email, pero puedes forzarlo aquí si quieres */
+        }
+
+        .inconsistencia-contacto {
+            font-size: 0.9em;
+            margin-bottom: 20px;
         }
 
         .inconsistencia-contacto strong {
             color: #000080;
+        }
+
+        .validacion-siesa {
+            font-size: 0.9em;
+            margin-bottom: 25px;
         }
 
         .validacion-siesa a {
@@ -94,9 +116,8 @@
             text-decoration: underline;
         }
 
-        .qr-factura { /* Si decides usar un QR en el futuro */
+        .qr-factura {
             margin-bottom: 25px;
-            text-align: center;
         }
 
         .qr-factura img {
@@ -105,6 +126,11 @@
             display: block;
             margin: 0 auto;
             border: 1px solid #ddd;
+        }
+
+        .firma-siesa {
+            font-size: 0.85em;
+            color: #666;
         }
 
         .firma-siesa strong {
@@ -125,50 +151,52 @@
 </head>
 
 <body>
-    <div class="outer-container">
-        <div class="contenedor-email">
-            <div class="linea-superior"></div>
+    <div class="contenedor-email">
+        <div class="linea-superior"></div>
 
-            <p class="saludo">Estimado cliente</p>
-            <div class="nombre-cliente">
-                <p> {{ venta_info['nombre_cliente'] }}</p>
-            </div>
-
-            <p class="mensaje-factura">MicroChip S.A.S informa que se ha emitido la siguiente Factura Nº:</p>
-            <div class="numero-factura">
-                <p> {{ venta_info['folio'] }}</p>
-            </div>
-
-            <p class="mensaje-factura">Valor total</p>
-            <div class="valor-total">
-                <p> {{ venta_info['total'] }}</p>
-            </div>
-
-            <a href="" class="boton-ver-factura">Ver factura</a>
-
-            <div class="linea-inferior"></div>
-
-            <p class="nota-xml-pdf">El archivo comprimido que usted está recibiendo se conforma por un XML firmado y un PDF
-                correspondiente al documento electrónico emitido.</p>
-
-            <p class="inconsistencia-contacto">En caso de alguna inconsistencia, por favor comuníquese con:
-                <strong>MicroChip S.A.S</strong>
-            </p>
-
-            <p class="validacion-siesa">Factura generada a través de Chipcore como Proveedor de Servicios Tecnológicos
-                <strong>Autorizado</strong>, si quiere validar este correo y su información por favor ingrese <a
-                    href="#">aquí</a>
-            </p>
-
-            <div class="linea-inferior"></div>
-
-            <p class="firma-siesa">Factura generada a través de Chipcore como Proveedor de Servicios Tecnológicos Autorizado
-            </p>
-            <p class="firma-siesa"><span class="email-automatico">Este es un correo automático, por favor <span
-                        class="no-responder">no responda al remitente</span></span><br>
-                <strong>SIESA (Sistemas de Información Empresarial SA)</strong>
-            </p>
+        <p class="saludo">Estimado cliente</p>
+        <div class="nombre-cliente">
+            <p> {{ venta_info['nombre_cliente'] }}</p>
         </div>
+
+        <p class="mensaje-factura">MicroChip S.A.S informa que se ha emitido la siguiente Factura Nº:</p>
+        <div class="numero-factura">
+            <p> {{ venta_info['folio'] }}</p>
+        </div>
+
+        <p class="mensaje-factura">Valor total</p>
+        <div class="valor-total">
+            <p> {{ venta_info['total'] }}</p>
+        </div>
+
+        <a href="#" class="boton-ver-factura">Ver factura</a>
+
+        <div class="linea-inferior"></div>
+
+        <p class="nota-xml-pdf">El archivo comprimido que usted está recibiendo se conforma por un XML firmado y un PDF
+            correspondiente al documento electrónico emitido.</p>
+
+        <p class="inconsistencia-contacto">En caso de alguna inconsistencia, por favor comuníquese con:
+            <strong>MicroChip S.A.S</strong>
+        </p>
+
+        <p class="validacion-siesa">Factura generada a través de Chipcore como Proveedor de Servicios Tecnológicos
+            <strong>Autorizado</strong>, si quiere validar este correo y su información por favor ingrese <a
+                href="#">aquí</a>
+        </p>
+
+        <div class="qr-factura">
+            <img src="ruta-a-tu-qr.png" alt="QR Factura">
+        </div>
+
+        <div class="linea-inferior"></div>
+
+        <p class="firma-siesa">Factura generada a través de Chipcore como Proveedor de Servicios Tecnológicos Autorizado
+        </p>
+        <p class="firma-siesa"><span class="email-automatico">Este es un correo automático, por favor <span
+                        class="no-responder">no responda al remitente</span></span><br>
+            <strong>SIESA (Sistemas de Información Empresarial SA)</strong>
+        </p>
     </div>
 </body>
 

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
+from num2words import num2words
 import re
 import random
 import threading
@@ -565,27 +566,37 @@ def finalizar_compra():
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
 
 # --- Función auxiliar para convertir números a letras (ejemplo básico) ---
+
 def convertir_a_letras(numero):
     """
-    Función de ejemplo para convertir un número a letras.
-    Para una implementación robusta, considera usar una librería como 'num2words'.
+    Convierte un número (entero o flotante) a su representación en letras en español,
+    incluyendo el manejo de centavos (moneda).
     """
-    if numero == 0:
-        return "CERO PESOS"
-    # Implementación muy básica, expande esto según tus necesidades
-    unidades = ["", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"]
-    decenas = ["", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"]
-    centenas = ["", "CIEN", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"]
+    try:
+        # Separar la parte entera y la parte decimal
+        parte_entera = int(numero)
+        parte_decimal = round((numero - parte_entera) * 100) # Obtener los centavos
 
-    if numero < 10:
-        return unidades[int(numero)] + " PESOS M/CTE *******"
-    elif numero < 100 and numero >= 10:
-        return decenas[int(numero/10)] + (" Y " + unidades[int(numero%10)] if numero%10 != 0 else "") + " PESOS M/CTE *******"
-    elif numero < 1000 and numero >= 100:
-        return centenas[int(numero/100)] + " " + convertir_a_letras(numero % 100).replace(" PESOS M/CTE *******", "") + " PESOS M/CTE *******"
-    # Esto es solo un placeholder, la implementación completa es extensa
-    return "VALOR EN LETRAS NO IMPLEMENTADO PARA ESTE RANGO"
+        letras_entera = num2words(parte_entera, lang='es')
 
+        # Formatear la parte entera
+        if parte_entera == 1:
+            letras_entera = letras_entera.replace("un", "UNO") # Para asegurar "UN PESO"
+        else:
+            letras_entera = letras_entera.upper() # Convertir todo a mayúsculas
+
+        resultado = f"{letras_entera} PESOS"
+
+        if parte_decimal > 0:
+            letras_decimal = num2words(parte_decimal, lang='es').upper()
+            resultado += f" CON {letras_decimal} CENTAVOS"
+        else:
+            resultado += " EXACTOS" # O simplemente dejarlo sin "exactos" si no lo necesitas
+
+        return resultado + " M/CTE *******"
+
+    except Exception as e:
+        return f"Error al convertir el número: {e}"
 
 @app.route('/api/ventas')
 def api_ventas():
