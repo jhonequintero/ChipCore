@@ -18,8 +18,8 @@ if os.name == 'nt':
     # Esta ruta es para tu entorno local de Windows
     WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
 else:
-    # >>> CAMBIO AQUÍ para Render: Apunta a la ruta donde lo copiamos manualmente <<<
-    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf_custom/wkhtmltopdf' 
+    # >>> CAMBIO AQUÍ para Render: Apunta a la raíz del proyecto en Render <<<
+    WKHTMLTOPDF_DEFAULT_PATH = '/opt/render/project/src/wkhtmltopdf' 
 
 WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
 config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
