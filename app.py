@@ -1,13 +1,13 @@
+import os
+import pdfkit
 from flask import Flask, request, redirect, session, url_for, render_template, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import os
 from num2words import num2words
 import re
 import random
 import threading
-import pdfkit
 from flask_mail import Mail, Message
 import io
 
@@ -15,8 +15,10 @@ app = Flask(__name__)
 app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
 
 if os.name == 'nt':
+    # Esta ruta es para tu entorno local de Windows
     WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
 else:
+    # Esta ruta es la que espera pdfkit por defecto y donde wkhtmltopdf-headless debería instalarse en Render
     WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf'
 
 WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
@@ -652,6 +654,7 @@ def generar_pdf(datos_para_pdf):
     with app.app_context():
         html_string = render_template('factura_pdf.html', **datos_para_pdf)
 
+    # Asegúrate de que config_pdf está disponible aquí (está globalmente)
     pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None})
     return pdf_bytes
 
