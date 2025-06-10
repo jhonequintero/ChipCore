@@ -18,8 +18,8 @@ if os.name == 'nt':
     # Esta ruta es para tu entorno local de Windows
     WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
 else:
-    # Esta ruta es la que espera pdfkit por defecto y donde wkhtmltopdf-headless debería instalarse en Render
-    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf'
+    # >>> CAMBIO AQUÍ para Render: Apunta a la ruta donde lo copiamos manualmente <<<
+    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf_custom/wkhtmltopdf' 
 
 WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
 config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
