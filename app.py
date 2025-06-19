@@ -1,44 +1,55 @@
-import os
-import pdfkit
 from flask import Flask, request, redirect, session, url_for, render_template, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import os
 from num2words import num2words
 import re
 import random
 import threading
+
+# Librerías para PDF y correo
+import pdfkit
+# REMOVED: smtplib, email.mime.multipart, email.mime.application, email.mime.text
+# ADDED: Flask-Mail
 from flask_mail import Mail, Message
-import io
+import io # Necesario para manejar el PDF en memoria para Flask-Mail
 
 app = Flask(__name__)
 app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
 
+# --- INICIO DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
+
+# Configuración de wkhtmltopdf: se adapta al sistema operativo
 if os.name == 'nt':
-    # Esta ruta es para tu entorno local de Windows
     WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
 else:
-    # >>> CAMBIO AQUÍ para Render: Apunta a la raíz del proyecto en Render <<<
-    WKHTMLTOPDF_DEFAULT_PATH = '/opt/render/project/src/wkhtmltopdf' 
+    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf' # O '/usr/bin/wkhtmltopdf'
 
 WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
-config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH) # Renombrado a config_pdf para evitar conflicto
 
+# Configuración de Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'marcelaquintero973@gmail.com'
-app.config['MAIL_PASSWORD'] = 'dzarsqoqqhxpqcub'
+app.config['MAIL_PASSWORD'] = 'dzarsqoqqhxpqcub' # ¡ADVERTENCIA: Usa una contraseña de aplicación de Gmail!
 app.config['MAIL_DEFAULT_SENDER'] = 'marcelaquintero973@gmail.com'
 
-mail = Mail(app)
+mail = Mail(app) # Inicializa Flask-Mail con la aplicación
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://chipcore_user:QJ4oZIaYL90TkcEsX2OewT7eFunk4REv@dpg-d0l3el7fte5s73962vmg-a.oregon-postgres.render.com:5432/base_datos_chipcore"
+# --- FIN DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
+
+
+# Configuración de la base de datos SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://user_chipcore:HGDR4ltK7hHdyOmt7uRISoA70RYNBHym@dpg-d19ag0idbo4c73d3q3s0-a.oregon-postgres.render.com:5432/base_microchip?sslmode=require"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+
 class Usuario(db.Model):
-    __tablename__ = 'usuario'
+    _tablename_ = 'usuario'
     codigo = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
@@ -51,7 +62,7 @@ class Usuario(db.Model):
 
 
 class Producto(db.Model):
-    __tablename__ = 'producto'
+    _tablename_ = 'producto'
     id_producto = db.Column(db.Integer, primary_key=True)
     nombre_producto = db.Column(db.String(100), nullable=False)
     descripcion_producto = db.Column(db.String(200), nullable=True)
@@ -60,7 +71,7 @@ class Producto(db.Model):
 
 
 class Cliente(db.Model):
-    __tablename__ = 'cliente'
+    _tablename_ = 'cliente'
     id_cliente = db.Column(db.Integer, primary_key=True)
     nombre_completo = db.Column(db.String(200), nullable=False)
     correo = db.Column(db.String(100), unique=True, nullable=False)
@@ -68,7 +79,7 @@ class Cliente(db.Model):
 
 
 class Carrito(db.Model):
-    __tablename__ = 'carrito'
+    _tablename_ = 'carrito'
     id_carrito = db.Column(db.Integer, primary_key=True)
     id_cliente = db.Column(db.Integer, db.ForeignKey('cliente.id_cliente'), nullable=False)
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'), nullable=False)
@@ -76,7 +87,7 @@ class Carrito(db.Model):
     fecha = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 class VentaCabecera(db.Model):
-    __tablename__ = 'venta_cabecera'
+    _tablename_ = 'venta_cabecera'
     id_venta = db.Column(db.Integer, primary_key=True)
     id_cliente = db.Column(db.Integer, db.ForeignKey('cliente.id_cliente'))
     id_vendedor = db.Column(db.Integer, db.ForeignKey('usuario.id_usuario'))
@@ -90,15 +101,17 @@ class VentaCabecera(db.Model):
 
 
 class VentaDetalle(db.Model):
-    __tablename__ = 'venta_detalle'
+    _tablename_ = 'venta_detalle'
     id_detalle = db.Column(db.Integer, primary_key=True)
     id_venta = db.Column(db.Integer, db.ForeignKey('venta_cabecera.id_venta'))
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'))
     cantidad = db.Column(db.Integer)
-    precio = db.Column(db.Float)
+    precio = db.Column(db.Float) # Este es el precio unitario del producto en el momento de la venta
 
     venta = db.relationship('VentaCabecera', backref='detalles')
     producto = db.relationship('Producto')
+
+# --- Fin de tus modelos SQLAlchemy ---
 
 
 with app.app_context():
@@ -125,6 +138,7 @@ with app.app_context():
             db.session.add(nuevo_admin)
     db.session.commit()
 
+# --- Rutas de autenticación y paneles (permanecen mayormente iguales) ---
 @app.route('/')
 def inicio():
     return render_template('index.html', error=None)
@@ -441,15 +455,16 @@ def finalizar_compra():
                 cedula=cliente_data["cedula"]
             )
             db.session.add(cliente)
-            db.session.commit()
+            db.session.commit() # Hacer commit del nuevo cliente si se añadió
 
         folio_venta = f"F{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
         fecha_actual = datetime.now().date()
         hora_actual = datetime.now().time()
 
         total_venta = 0
-        detalles_compra = []
+        detalles_compra = [] # Renombrado para evitar conflicto con el import 'detalles' de email
 
+        # Verificar stock antes de modificar
         for item in carrito_data:
             producto = Producto.query.get(item["id"])
             if not producto:
@@ -464,13 +479,14 @@ def finalizar_compra():
             total_producto = cantidad_comprada * producto.precio_producto
             total_venta += total_producto
 
-            detalles_compra.append({
+            detalles_compra.append({ # Usar el nuevo nombre 'detalles_compra'
                 "producto": producto,
                 "cantidad": cantidad_comprada,
                 "precio_unitario": producto.precio_producto,
                 "total_producto": total_producto
             })
 
+        # Crear la cabecera de la venta
         venta_cabecera = VentaCabecera(
             folio=folio_venta,
             fecha=fecha_actual,
@@ -482,7 +498,8 @@ def finalizar_compra():
         db.session.add(venta_cabecera)
         db.session.flush()
 
-        for detalle_item in detalles_compra:
+        # Crear detalles y descontar stock
+        for detalle_item in detalles_compra: # Iterar sobre 'detalles_compra'
             producto = detalle_item["producto"]
             cantidad = detalle_item["cantidad"]
             precio_unitario = detalle_item["precio_unitario"]
@@ -500,31 +517,35 @@ def finalizar_compra():
 
         db.session.commit()
 
+        # --- PREPARACIÓN DE DATOS PARA PDF Y CORREO ---
+        # Datos para la plantilla del PDF
         datos_para_pdf = {
             'nombre_cliente': cliente.nombre_completo,
-            'contacto_cliente': cliente.correo,
+            'contacto_cliente': cliente.correo, # Usar correo como contacto para el ejemplo
             'cc_cliente': cliente.cedula,
-            'ciudad_cliente': 'N/A',
+            'ciudad_cliente': 'N/A', # Si no tienes esta información, puedes omitirla o poner un valor por defecto
             'fecha_generacion': fecha_actual.strftime('%d/%m/%Y %H:%M:%S %p.'),
-            'fecha_vencimiento': (fecha_actual).strftime('%Y/%m/%d'),
+            'fecha_vencimiento': (fecha_actual).strftime('%Y/%m/%d'), # O la fecha de vencimiento real
             'vendedor': vendedor.nombre,
-            'forma_pago': 'Contado',
+            'forma_pago': 'Contado', # O la forma de pago real de tu sistema
             'items_factura': [
                 {'referencia': d["producto"].id_producto,
                  'descripcion': d["producto"].nombre_producto,
                  'cantidad': d["cantidad"],
-                 'precio_unit': f"${d['precio_unitario']:.2f}",
+                 'precio_unit': f"${d['precio_unitario']:.2f}", # Formato de moneda
                  'valor_total_item': f"${d['total_producto']:.2f}"}
                 for d in detalles_compra
             ],
-            'descuentos': '$0.00',
+            'descuentos': '$0.00', # Si tienes descuentos, agrégalos aquí
             'total_final': f"${total_venta:.2f}",
-            'valor_letras': convertir_a_letras(total_venta),
+            'valor_letras': convertir_a_letras(total_venta), # Implementa esta función
             'notas': 'Gracias por su compra en Microchip.'
         }
 
+        # Generar el PDF y obtenerlo como bytes en memoria
         pdf_bytes = generar_pdf(datos_para_pdf)
 
+        # Aquí preparas el diccionario con los datos que necesitas para el correo
         venta_info_correo = {
             "nombre_cliente": cliente.nombre_completo,
             "fecha": fecha_actual.strftime('%Y-%m-%d'),
@@ -534,6 +555,8 @@ def finalizar_compra():
             "vendedor": vendedor.nombre
         }
 
+        # Llamas a la función que envía la factura de forma asíncrona (en otro hilo)
+        # Ahora pasamos los bytes del PDF directamente
         enviar_factura_async(cliente.correo, pdf_bytes, venta_info_correo)
 
         return jsonify({"mensaje": "✅ Compra finalizada, registro guardado y factura enviada al correo."})
@@ -543,17 +566,25 @@ def finalizar_compra():
         print("Error en /finalizar_compra:", e)
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
 
+# --- Función auxiliar para convertir números a letras (ejemplo básico) ---
+
 def convertir_a_letras(numero):
+    """
+    Convierte un número (entero o flotante) a su representación en letras en español,
+    incluyendo el manejo de centavos (moneda).
+    """
     try:
+        # Separar la parte entera y la parte decimal
         parte_entera = int(numero)
-        parte_decimal = round((numero - parte_entera) * 100)
+        parte_decimal = round((numero - parte_entera) * 100) # Obtener los centavos
 
         letras_entera = num2words(parte_entera, lang='es')
 
+        # Formatear la parte entera
         if parte_entera == 1:
-            letras_entera = letras_entera.replace("un", "UNO")
+            letras_entera = letras_entera.replace("un", "UNO") # Para asegurar "UN PESO"
         else:
-            letras_entera = letras_entera.upper()
+            letras_entera = letras_entera.upper() # Convertir todo a mayúsculas
 
         resultado = f"{letras_entera} PESOS"
 
@@ -561,7 +592,7 @@ def convertir_a_letras(numero):
             letras_decimal = num2words(parte_decimal, lang='es').upper()
             resultado += f" CON {letras_decimal} CENTAVOS"
         else:
-            resultado += " EXACTOS"
+            resultado += " EXACTOS" # O simplemente dejarlo sin "exactos" si no lo necesitas
 
         return resultado + " M/CTE *******"
 
@@ -619,18 +650,30 @@ def api_ventas():
 
     return jsonify(resultado)
 
+# ---
+### *Funciones de Correo y PDF Actualizadas*
+
+# Ahora estas funciones son mucho más limpias y aprovechan Flask-Mail y las plantillas Jinja2.
+
+# ```python
+# --- Función para enviar el correo (ACTUALIZADA) ---
+# Ahora recibe pdf_data que son los bytes del PDF, no una ruta de archivo.
 def enviar_factura(destinatario, pdf_data, venta_info):
     asunto = "Factura de tu compra en Microchip"
 
     try:
+        # TODO LO RELACIONADO CON FLASK-MAIL DEBE ESTAR DENTRO DE ESTE BLOQUE
         with app.app_context():
+            # 1. Renderizar el HTML para el cuerpo del correo
             cuerpo_html_email = render_template('email_factura.html', venta_info=venta_info)
             print(f"DEBUG: HTML del correo generado para {destinatario}")
 
+            # 2. Crear el objeto Message
             msg = Message(subject=asunto, recipients=[destinatario])
             msg.html = cuerpo_html_email
             print("DEBUG: Mensaje de Flask-Mail creado.")
 
+            # 3. Adjuntar el PDF
             msg.attach(
                 filename=f"factura_{venta_info['folio']}.pdf",
                 content_type="application/pdf",
@@ -638,26 +681,36 @@ def enviar_factura(destinatario, pdf_data, venta_info):
             )
             print("DEBUG: PDF adjuntado al mensaje.")
 
+            # 4. Enviar el correo
             mail.send(msg)
             print(f"✅ Correo enviado a {destinatario}")
 
     except Exception as e:
         print(f"❌ Error al enviar correo a {destinatario}: {e}")
-        print(f"Error detallado: {e}")
+        print(f"Error detallado: {e}") # Para obtener más información en caso de fallo
 
+# Función para llamar enviar_factura en un hilo separado (igual, pero ahora recibe bytes)
 def enviar_factura_async(destinatario, pdf_data, venta_info):
     hilo = threading.Thread(target=enviar_factura, args=(destinatario, pdf_data, venta_info))
     hilo.start()
 
 
+# --- Función para generar PDF (ACTUALIZADA) ---
+# Ahora recibe un diccionario de datos que se pasará directamente a la plantilla.
+# Devuelve los bytes del PDF, no guarda un archivo en disco.
 def generar_pdf(datos_para_pdf):
-    with app.app_context():
-        html_string = render_template('factura_pdf.html', **datos_para_pdf)
+    # Renderiza el HTML del PDF usando la plantilla Jinja2
+    with app.app_context(): # Necesario para usar render_template en un hilo.
+        # Es importante pasar request.url_root si tu HTML del PDF usa url_for('static', ...)
+        # para que WeasyPrint pueda encontrar las imágenes/CSS.
+        html_string = render_template('factura_pdf.html', **datos_para_pdf) # Desempaqueta el diccionario
 
-    # Asegúrate de que config_pdf está disponible aquí (está globalmente)
-    pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None})
-    return pdf_bytes
+    # Genera el PDF desde el string HTML y lo guarda en un buffer de bytes
+    # Usamos configuration=config_pdf que ya definimos globalmente.
+    pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
+    return pdf_bytes # Retorna los bytes del PDF
 
+# --- Tu ruta de logout ---
 @app.route('/logout')
 def logout():
     session.clear()
