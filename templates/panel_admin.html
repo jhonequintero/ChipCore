@@ -119,7 +119,9 @@
                     <div class="divtituloagg">
                         <h1>Agregar Producto.</h1>
                     </div>
-                    <form class="formularioagg" action="/agregar_producto" method="POST">
+                     <!-- <form class="formularioagg" action="/agregar_producto" method="POST"> -->
+                    
+                    <form class="formularioagg" id="form-producto">
                         <div class="divformularioagg">
                             <div class="preguntas">
                                 <div class="preguntardatos">
@@ -154,7 +156,7 @@
                         </div>
                         <div class="cuadrobusqueda">
                             <input class="cuadritobusqueda" type="text" id="buscador" placeholder="Escribe el id del producto">
-                            <button class="botonbusqueda">
+                            <button class="botonbusquedaProductos">
                                 <img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa" alt="Buscar">
                             </button>
                         </div>
@@ -176,12 +178,18 @@
                             </p>
                             {% if productos %}
                                 {% for p in productos %}
-                                    <div class="divdivproducto">
+                                    <div class="divdivproducto" id="uni">
                                         <div class="botoneditaroeliminar">
-                                            <div style="width: 3vh; height: 25%;" class="botonx">
-                                                <button class="buttonX" onclick="abrirModal({{ p.id_producto }}, '{{ p.nombre_producto }}', '{{ p.descripcion_producto }}', {{ p.cantidad_producto }}, {{ p.precio_producto }})">
+                                            <div class="botonx">
+                                                <button class="buttonX btn-editar-producto"
+                                                    data-id="{{ p.id_producto }}"
+                                                    data-nombre="{{ p.nombre_producto | e }}"
+                                                    data-descripcion="{{ p.descripcion_producto | e }}"
+                                                    data-cantidad="{{ p.cantidad_producto }}"
+                                                    data-precio="{{ p.precio_producto }}">
                                                     <img class="imgx" src="{{ url_for('static', filename='img/tuerca.png') }}" alt="Editar">
                                                 </button>
+
                                             </div>
                                         </div>
                                         <div class="divproducto">
@@ -227,24 +235,27 @@
                         <div id="modal-editar" style="display:none;" class="modal">
                             <div class="modal-contenido">
                                 <span class="cerrar" onclick="cerrarModal()">&times;</span>
-                                <form method="POST" action="{{ url_for('actualizar_producto') }}">
-                                    <input type="hidden" name="id_producto" id="modal_id">
+                                <form id="form-editar-producto">
 
-                                    <label>Nombre:</label>
-                                    <input type="text" name="nombre_producto" id="modal_nombre"><br>
+    <input type="hidden" name="id_producto" id="modal_id">
 
-                                    <label>Descripción:</label>
-                                    <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
+    <label>Nombre:</label>
+    <input type="text" name="nombre_producto" id="modal_nombre"><br>
 
-                                    <label>Cantidad:</label>
-                                    <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
+    <label>Descripción:</label>
+    <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
 
-                                    <label>Precio:</label>
-                                    <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
+    <label>Cantidad:</label>
+    <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
 
-                                    <button type="submit">Guardar cambios</button>
-                                    <button type="button" onclick="cerrarModal()">Cancelar</button>
-                                </form>
+    <label>Precio:</label>
+    <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
+
+    <button type="submit">Guardar cambios</button>
+    
+    <button type="button" onclick="cerrarModal()">Cancelar</button>
+</form>
+
                             </div>
                         </div>
                     </div>
@@ -304,7 +315,7 @@
                         </div>
                         <div class="cuadrobusqueda">
                             <input class="cuadritobusqueda" type="text" id="buscadorCedula" placeholder="Escribe el id del producto">
-                            <button class="botonbusqueda">
+                            <button class="botonbusquedausuarios">
                                 <img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa" alt="Buscar">
                             </button>
                         </div>
@@ -328,8 +339,8 @@
                                 {% for u in usuarios %}
                                     <div class="divdivuser">
                                         <div class="botoneditaroeliminar">
-                                            <div style="width: 3vh; height: 25%;" class="botonx">
-                                                <button class="buttonEstado" onclick="cambiarEstadoUsuario({{ u.id_usuario }})">
+                                            <div class="boton1">
+                                                <button  class="buttonEstado" onclick="cambiarEstadoUsuario({{ u.id_usuario }})">
                                                     {% if u.estado %}
                                                         Desactivar
                                                     {% else %}
@@ -374,6 +385,19 @@
                                                                 <h5>Rol:</h5>
                                                             </div>
                                                             <div class="pedircaracter">{{ u.rol }}</div>
+                                                        </div>
+                                                        <!-- ESTADO VISUAL -->
+                                                        <div class="dato5 displaydatos estadoUsuario" id="estado-{{ u.id_usuario }}">
+                                                            <div class="caracter">
+                                                                <h5>Estado:</h5>
+                                                            </div>
+                                                            <div id="estado-texto-{{ u.id_usuario }}" class="pedircaracter {{ 'activo' if u.estado else 'inactivo' }}">
+                                                                {% if u.estado %}
+                                                                    Activo
+                                                                {% else %}
+                                                                    Inactivo
+                                                                {% endif %}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -467,6 +491,14 @@
             </div>
         </div>
     </section>
+    
+    <!-- Modal para mensajes (éxito, error, advertencia) -->
+    <div id="modalMensajes" class="message-modal" style="display: none;">
+        <div class="message-modal-contenido">
+            <i id="iconoModalMensajes" class="fas"></i>
+            <p id="textoModalMensajes"></p>
+        </div>
+    </div>
     <footer>
         <div class="tfoot">
         </div>

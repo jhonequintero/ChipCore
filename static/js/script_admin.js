@@ -1,3 +1,46 @@
+
+// Función para mostrar mensajes modales (NO usar alert)
+function showMessageModal(message, type = 'info') {
+    const modal = document.getElementById('modalMensajes'); // ID del modal en HTML
+    const modalText = document.getElementById('textoModalMensajes');
+    const modalIcon = document.getElementById('iconoModalMensajes');
+
+    if (!modal || !modalText) {
+        // Fallback en caso de que el modal HTML no esté cargado
+        console.error("Elementos del modal de mensajes no encontrados. Fallback a console.log:", message);
+        return;
+    }
+
+    modalText.textContent = message;
+    // Remueve clases anteriores y añade la nueva para el tipo de mensaje
+    modal.classList.remove('success', 'error', 'warning');
+    modal.classList.add(type); // Clase para estilos (success, error, warning)
+
+    if (modalIcon) {
+        modalIcon.classList.remove('fa-check-circle', 'fa-times-circle', 'fa-exclamation-triangle');
+        if (type === 'success') {
+            modalIcon.classList.add('fa-check-circle');
+        } else if (type === 'error') {
+            modalIcon.classList.add('fa-times-circle');
+        } else if (type === 'warning') {
+            modalIcon.classList.add('fa-exclamation-triangle');
+        } else {
+            modalIcon.classList.add('fa-info-circle'); // Default icon
+        }
+    }
+
+    modal.style.display = 'flex'; // Muestra el modal
+
+    // Ocultar automáticamente después de 3 segundos
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 1500);
+}
+
+
+
+
+
 // Función para deslizar una ventana (modal)
 function deslizarventana() {
     document.getElementById('ventana').classList.toggle('open');
@@ -17,19 +60,60 @@ function Enseñarpag(id) {
     }
 }
 
-// Funciones para manejar el modal de edición de productos
-function abrirModal(id, nombre, descripcion, cantidad, precio) {
-    document.getElementById("modal_id").value = id;
-    document.getElementById("modal_nombre").value = nombre;
-    document.getElementById("modal_descripcion").value = descripcion;
-    document.getElementById("modal_cantidad").value = cantidad;
-    document.getElementById("modal_precio").value = precio;
+// Mostrar modal al hacer clic en cualquier botón de editar producto
+document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-editar-producto");
+    if (!btn) return;
+
+    document.getElementById("modal_id").value = btn.dataset.id;
+    document.getElementById("modal_nombre").value = btn.dataset.nombre;
+    document.getElementById("modal_descripcion").value = btn.dataset.descripcion;
+    document.getElementById("modal_cantidad").value = btn.dataset.cantidad;
+    document.getElementById("modal_precio").value = btn.dataset.precio;
+
     document.getElementById("modal-editar").style.display = "flex";
-}
+});
 
 function cerrarModal() {
     document.getElementById("modal-editar").style.display = "none";
 }
+document.getElementById("form-editar-producto").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const boton = form.querySelector("button[type='submit']");
+
+    if (boton) {
+        boton.disabled = true;
+        boton.innerText = "Guardando...";
+    }
+
+    fetch("/actualizar_producto", {
+        method: "POST",
+        body: formData
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                cerrarModal(); // Cierra el modal
+                form.reset(); // Limpia el formulario
+                showMessageModal("✅ Producto actualizado correctamente", "success");
+            } else {
+                showMessageModal(data.error || "❌ No se pudo actualizar", "error");
+            }
+        })
+        .catch(err => {
+            console.error("Error al actualizar producto:", err);
+            showMessageModal("❌ Error del servidor", "error");
+        })
+        .finally(() => {
+            if (boton) {
+                boton.disabled = false;
+                boton.innerText = "Guardar cambios";
+            }
+        });
+});
 
 // --- Lógica del Carrito de Compras ---
 
@@ -63,8 +147,7 @@ function renderCarrito() {
         container.appendChild(div);
     });
 }
-
-// Función para verificar y agregar productos al carrito (incluye validación de stock)
+// Función para verificar y agregar productos al carrito (modificado con modal)
 async function verificarYAgregar(id, cantidad) {
     try {
         const existe = carrito.find(p => p.id === id);
@@ -80,12 +163,12 @@ async function verificarYAgregar(id, cantidad) {
         const data = await respuesta.json();
 
         if (!data.existe) {
-            alert("❌ " + data.mensaje);
+            showMessageModal("❌ " + data.mensaje, 'error');
             return;
         }
 
         if (!data.suficiente) {
-            alert("⚠️ " + data.mensaje + `. Solo quedan ${data.stock} unidades.`);
+            showMessageModal(`⚠️ ${data.mensaje}. Solo quedan ${data.stock} unidades.`, 'warning');
             return;
         }
 
@@ -98,7 +181,7 @@ async function verificarYAgregar(id, cantidad) {
 
     } catch (error) {
         console.error("Error:", error);
-        alert("❌ Error al conectar con el servidor.");
+        showMessageModal("❌ Error al conectar con el servidor.", 'error');
     }
 }
 
@@ -267,7 +350,6 @@ async function cargarVentas() {
     }
 }
 
-// Función para cambiar el estado de un usuario (activar/desactivar)
 async function cambiarEstadoUsuario(id_usuario) {
     try {
         const response = await fetch(`/usuario/${id_usuario}/cambiar_estado`, {
@@ -285,14 +367,24 @@ async function cambiarEstadoUsuario(id_usuario) {
             if (btn) {
                 btn.textContent = data.nuevo_estado ? 'Desactivar' : 'Activar';
             }
-            alert(`Usuario ${data.nuevo_estado ? 'activado' : 'desactivado'} correctamente`);
+
+            // Actualizar texto visual del estado
+            const contenedorEstado = document.querySelector(`#estado-${id_usuario} .pedircaracter`);
+            if (contenedorEstado) {
+                contenedorEstado.textContent = data.nuevo_estado ? 'Activo' : 'Inactivo';
+            }
+
+            // Mostrar modal con mensaje
+            showMessageModal(`✅ Usuario ${data.nuevo_estado ? 'activado' : 'desactivado'} correctamente.`, 'success');
+
         } else {
-            alert('Error: ' + (data.msg || 'No se pudo cambiar el estado'));
+            showMessageModal('Error: ' + (data.msg || 'No se pudo cambiar el estado'), 'error');
         }
     } catch (error) {
-        alert('Error en la petición: ' + error.message);
+        showMessageModal('❌ Error en la petición: ' + error.message, 'error');
     }
 }
+
 
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
 
@@ -312,6 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const form = e.target;
         const formData = new FormData(form);
+        const boton = form.querySelector("button[type='submit']");
+
+        // Desactiva el botón mientras se envía
+        if (boton) boton.disabled = true;
 
         fetch("/registrar_empleado", {
             method: "POST",
@@ -320,20 +416,91 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.mensaje);
+                    showMessageModal(data.mensaje, 'success');
                     form.reset();
+
+                    // OPCIONAL: Agrega el nuevo empleado a una tabla si existe
+                    const tabla = document.getElementById("tabla-empleados");
+                    if (tabla && data.empleado) {
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                        <td>${data.empleado.nombre}</td>
+                        <td>${data.empleado.apellido}</td>
+                        <td>${data.empleado.correo}</td>
+                        <td>${data.empleado.codigo_empleado}</td>
+                    `;
+                        tabla.appendChild(fila);
+                    }
+
                 } else {
-                    alert("Error: " + data.error);
+                    showMessageModal(data.error, 'error');
                 }
             })
             .catch(error => {
-                console.error("Error al enviar:", error);
-                alert("Hubo un problema al registrar.");
+                console.error("Error al registrar empleado:", error);
+                showMessageModal("❌ Hubo un problema al registrar.", 'error');
+            })
+            .finally(() => {
+                // Reactiva el botón pase lo que pase
+                if (boton) boton.disabled = false;
             });
     });
 
+    document.getElementById("form-producto").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const boton = form.querySelector("button[type='submit']");
+
+        if (boton) {
+            boton.disabled = true;
+            boton.innerText = "Registrando...";
+        }
+
+        fetch("/agregar_producto", {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showMessageModal(data.mensaje, 'success');
+                    form.reset();
+
+                    const tabla = document.getElementById("tabla-productos");
+                    if (tabla && data.producto) {
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                        <td>${data.producto.nombre}</td>
+                        <td>$${data.producto.precio}</td>
+                        <td>${data.producto.cantidad}</td>
+                        <td>${data.producto.descripcion}</td>
+                    `;
+                        tabla.appendChild(fila);
+                    }
+
+                } else {
+                    showMessageModal(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error("Error al registrar producto:", error);
+                showMessageModal("❌ Error del servidor", 'error');
+            })
+            .finally(() => {
+                if (boton) {
+                    boton.disabled = false;
+                    boton.innerText = "Registrar producto";
+                }
+            });
+    });
+
+
+
+
     // Eventos para la búsqueda de productos
-    document.querySelector(".botonbusqueda").addEventListener("click", function (e) {
+    document.querySelector(".botonbusquedaProductos").addEventListener("click", function (e) {
         e.preventDefault();
         filtrarProductos();
     });
@@ -345,16 +512,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Eventos para la búsqueda de usuarios por cédula
-    // Nota: Si .botonbusqueda es el mismo para productos y usuarios, esto podría causar conflictos.
-    // Revisa tu HTML para asegurar que sean botones distintos o con IDs únicos.
-    // Por ahora, asumo que se refiere al botón de búsqueda para usuarios.
-    // Si es el mismo botón, el último evento listener agregado sobrescribirá al anterior para ese botón.
-    document.querySelector(".botonbusqueda").addEventListener("click", function (e) {
+
+    // Evento para buscar usuarios por cédula con botón
+    document.querySelector(".botonbusquedausuarios").addEventListener("click", function (e) {
         e.preventDefault();
         filtrarUsuariosPorCedula();
     });
 
+    // Evento para buscar usuarios por cédula con Enter
     document.getElementById("buscadorCedula").addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -362,28 +527,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Evento para agregar productos al carrito desde el input de ID
-    document.querySelector(".botonaddid").addEventListener("click", async (e) => {
-        e.preventDefault();
+    // Función para filtrar usuarios por cédula sin dañar el diseño
+    function filtrarUsuariosPorCedula() {
+        const input = document.getElementById("buscadorCedula");
+        const texto = input.value.trim().toLowerCase();
+        const usuarios = document.querySelectorAll(".divdivuser");
+        const mensaje = document.getElementById("mensaje-no-usuario");
 
-        const inputs = document.querySelectorAll(".addid .entradaid");
-        const inputID = inputs[0];
-        const inputCantidad = inputs[1];
+        let encontrados = 0;
 
-        const id = parseInt(inputID.value);
-        const cantidad = parseInt(inputCantidad.value);
+        usuarios.forEach(user => {
+            const cedulaElemento = user.querySelector(".dato3 .pedircaracter");
+            const cedula = cedulaElemento?.textContent.trim().toLowerCase() || "";
 
-        if (!id || !cantidad || cantidad <= 0) {
-            alert("❗ Ingresa un ID y cantidad válidos.");
-            return;
+            if (cedula.includes(texto) || texto === "") {
+                user.style.display = "grid"; // mantener el layout
+                encontrados++;
+            } else {
+                user.style.display = "none";
+            }
+        });
+
+        if (mensaje) {
+            mensaje.style.display = encontrados === 0 ? "block" : "none";
         }
-
-        await verificarYAgregar(id, cantidad);
-
-        inputID.value = "";
-        inputCantidad.value = "";
-    });
-
+    }
     // Evento para buscar cliente al salir del campo de cédula
     document.getElementById('cedula').addEventListener('blur', function () {
         const cedula = this.value.trim();
@@ -411,23 +579,63 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
-    // Evento para finalizar la compra
-    document.querySelector(".botonenviarcompra").addEventListener("click", async () => {
+
+
+    document.querySelector(".botonaddid").addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const boton = e.target;
+        boton.disabled = true;
+        boton.innerText = "Agregando...";
+
+        const inputs = document.querySelectorAll(".addid .entradaid");
+        const inputID = inputs[0];
+        const inputCantidad = inputs[1];
+
+        const id = parseInt(inputID.value);
+        const cantidad = parseInt(inputCantidad.value);
+
+        if (!id || !cantidad || cantidad <= 0) {
+            showMessageModal("❗ Ingresa un ID y cantidad válidos.", "warning");
+            boton.disabled = false;
+            boton.innerText = "Agregar";
+            return;
+        }
+
+        await verificarYAgregar(id, cantidad);
+
+        inputID.value = "";
+        inputCantidad.value = "";
+
+        boton.disabled = false;
+        boton.innerText = "Agregar";
+    });
+
+
+
+
+
+    document.querySelector(".botonenviarcompra").addEventListener("click", async (e) => {
+        const boton = e.target;
+
+        if (boton.disabled) return; // evita múltiples envíos
+
+        boton.disabled = true;
+        boton.innerText = "Procesando...";
+
         const nombre = document.getElementById("nombre_completo").value;
         const correo = document.getElementById("correo").value;
         const cedula = document.getElementById("cedula").value;
 
         if (!nombre || !correo || !cedula || carrito.length === 0) {
-            alert("❗ Debes llenar los datos del cliente y tener productos en el carrito.");
+            showMessageModal("❗ Debes llenar los datos del cliente y tener productos en el carrito.", "warning");
+            boton.disabled = false;
+            boton.innerText = "Finalizar compra";
             return;
         }
 
         const data = {
-            cliente: {
-                nombre,
-                correo,
-                cedula
-            },
+            cliente: { nombre, correo, cedula },
             carrito
         };
 
@@ -440,12 +648,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!res.ok) {
                 const errorData = await res.json();
-                alert("❌ Error: " + (errorData.mensaje || "Error desconocido"));
+                showMessageModal("❌ Error: " + (errorData.mensaje || "Error desconocido"), "error");
                 return;
             }
 
             const result = await res.json();
-            alert(result.mensaje);
+            showMessageModal(result.mensaje, "success");
 
             carrito = [];
             renderCarrito();
@@ -456,9 +664,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error("Error:", err);
-            alert("❌ Hubo un problema al guardar la compra.");
+            showMessageModal("❌ Hubo un problema al guardar la compra.", "error");
+        } finally {
+            boton.disabled = false;
+            boton.innerText = "Finalizar compra";
         }
     });
+
 });
 
 // --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---

@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, session, url_for, render_template, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func, cast, Integer
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
@@ -189,8 +191,9 @@ def panel_admin():
             "codigo_empleado": usuario.codigo_empleado
         }
 
-        empleados = Usuario.query.filter_by(rol='empleado').all()
-        productos = Producto.query.all()
+        empleados = Usuario.query.filter_by(rol='empleado').order_by(Usuario.id_usuario.asc()).all()
+        productos = Producto.query.order_by(Producto.id_producto.asc()).all()
+
         facturas = VentaCabecera.query.all()
 
         return render_template(
@@ -224,7 +227,6 @@ def registrar_empleado():
         if Usuario.query.filter_by(correo=correo).first():
             return jsonify(success=False, error="El correo ya está registrado.")
 
-        from sqlalchemy import func, cast, Integer
 
         ultimo_num = db.session.query(
             func.max(
@@ -253,7 +255,13 @@ def registrar_empleado():
         db.session.add(nuevo_empleado)
         db.session.commit()
 
-        return jsonify(success=True, mensaje="Empleado registrado exitosamente.")
+        return jsonify(success=True, mensaje="✅ Empleado registrado exitosamente.", empleado={
+            'nombre': nombre,
+            'apellido': apellido,
+            'correo': correo,
+            'codigo_empleado': nuevo_codigo
+        })
+
 
     return jsonify(success=False, error="Acceso no autorizado.")
 
@@ -270,7 +278,7 @@ def panel_trabajador():
                 "rol": usuario.rol,
                 "codigo_empleado": usuario.codigo_empleado
             }
-            productos = Producto.query.all()
+            productos = Producto.query.order_by(Producto.id_producto.asc()).all()
             facturas = VentaCabecera.query.filter_by(id_vendedor=usuario.id_usuario).all()
 
             return render_template('panel_trabajador.html',
@@ -292,27 +300,37 @@ def cambiar_estado_usuario(id_usuario):
         return jsonify({'success': True, 'nuevo_estado': usuario.estado})
     return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
 
-
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
     if 'usuario' in session and session.get('tipo') == 'administrador':
-        nombre = request.form['nombre_producto']
-        descripcion = request.form['descripcion_producto']
-        precio = float(request.form['precio_producto'])
-        cantidad = int(request.form['cantidad_producto'])
+        try:
+            nombre = request.form['nombre_producto']
+            descripcion = request.form['descripcion_producto']
+            precio = float(request.form['precio_producto'])
+            cantidad = int(request.form['cantidad_producto'])
 
-        nuevo_producto = Producto(
-            nombre_producto=nombre,
-            descripcion_producto=descripcion,
-            precio_producto=precio,
-            cantidad_producto=cantidad
-        )
+            nuevo_producto = Producto(
+                nombre_producto=nombre,
+                descripcion_producto=descripcion,
+                precio_producto=precio,
+                cantidad_producto=cantidad
+            )
 
-        db.session.add(nuevo_producto)
-        db.session.commit()
+            db.session.add(nuevo_producto)
+            db.session.commit()
 
-        return redirect(url_for('panel_admin'))
-    return redirect(url_for('inicio'))
+            return jsonify(success=True, mensaje="✅ Producto registrado con éxito", producto={
+                'nombre': nombre,
+                'descripcion': descripcion,
+                'precio': precio,
+                'cantidad': cantidad
+            })
+
+        except Exception as e:
+            print("Error al registrar producto:", e)
+            return jsonify(success=False, error="❌ Hubo un error al registrar el producto.")
+
+    return jsonify(success=False, error="Acceso no autorizado.")
 
 
 @app.route('/ver_productos')
@@ -352,22 +370,27 @@ def ver_productos_trabajador():
 @app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
     if 'usuario' in session and session.get('tipo') == 'administrador':
-        id_producto = request.form.get('id_producto')
-        nombre = request.form.get('nombre_producto')
-        descripcion = request.form.get('descripcion_producto')
-        cantidad = int(request.form.get('cantidad_producto', 0))
-        precio = float(request.form.get('precio_producto', 0.0))
+        try:
+            id_producto = int(request.form.get('id_producto'))
+            nombre = request.form.get('nombre_producto')
+            descripcion = request.form.get('descripcion_producto')
+            cantidad = int(request.form.get('cantidad_producto'))
+            precio = float(request.form.get('precio_producto'))
 
-        producto = Producto.query.get(id_producto)
-        if producto:
-            producto.nombre_producto = nombre
-            producto.descripcion_producto = descripcion
-            producto.cantidad_producto = cantidad
-            producto.precio_producto = precio
-            db.session.commit()
-
-        return redirect(url_for('panel_admin', vista='productos'))
-    return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
+            producto = db.session.get(Producto, id_producto)  # método recomendado en SQLAlchemy 2
+            if producto:
+                producto.nombre_producto = nombre
+                producto.descripcion_producto = descripcion
+                producto.cantidad_producto = cantidad
+                producto.precio_producto = precio
+                db.session.commit()
+                return jsonify({'success': True, 'mensaje': 'Producto actualizado correctamente'})
+            else:
+                return jsonify({'success': False, 'error': 'Producto no encontrado'})
+        except Exception as e:
+            print(f"Error al actualizar producto: {e}")
+            return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
+    return jsonify({'success': False, 'error': 'Acceso no autorizado'}), 403
 
 
 @app.route('/verificar_producto', methods=['POST'])
@@ -424,6 +447,10 @@ def buscar_cliente():
         "correo": cliente.correo
     })
 
+from datetime import datetime
+import random
+from flask import jsonify, request, session
+
 @app.route('/finalizar_compra', methods=['POST'])
 def finalizar_compra():
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
@@ -455,18 +482,19 @@ def finalizar_compra():
                 cedula=cliente_data["cedula"]
             )
             db.session.add(cliente)
-            db.session.commit() # Hacer commit del nuevo cliente si se añadió
+            db.session.commit()
 
-        folio_venta = f"F{datetime.now().strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
-        fecha_actual = datetime.now().date()
-        hora_actual = datetime.now().time()
+        # Fecha y hora actual
+        fecha_actual = datetime.now()
+        hora_actual = fecha_actual.strftime("%H:%M:%S")
+        folio_venta = f"F{fecha_actual.strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
 
         total_venta = 0
-        detalles_compra = [] # Renombrado para evitar conflicto con el import 'detalles' de email
+        detalles_compra = []
 
-        # Verificar stock antes de modificar
+        # Verificar stock y calcular totales
         for item in carrito_data:
-            producto = Producto.query.get(item["id"])
+            producto = db.session.get(Producto, item["id"])
             if not producto:
                 return jsonify({"mensaje": f"Producto con ID {item['id']} no encontrado"}), 400
 
@@ -479,14 +507,14 @@ def finalizar_compra():
             total_producto = cantidad_comprada * producto.precio_producto
             total_venta += total_producto
 
-            detalles_compra.append({ # Usar el nuevo nombre 'detalles_compra'
+            detalles_compra.append({
                 "producto": producto,
                 "cantidad": cantidad_comprada,
                 "precio_unitario": producto.precio_producto,
                 "total_producto": total_producto
             })
 
-        # Crear la cabecera de la venta
+        # Registrar venta cabecera
         venta_cabecera = VentaCabecera(
             folio=folio_venta,
             fecha=fecha_actual,
@@ -498,8 +526,8 @@ def finalizar_compra():
         db.session.add(venta_cabecera)
         db.session.flush()
 
-        # Crear detalles y descontar stock
-        for detalle_item in detalles_compra: # Iterar sobre 'detalles_compra'
+        # Registrar detalles de la venta
+        for detalle_item in detalles_compra:
             producto = detalle_item["producto"]
             cantidad = detalle_item["cantidad"]
             precio_unitario = detalle_item["precio_unitario"]
@@ -510,53 +538,51 @@ def finalizar_compra():
                 cantidad=cantidad,
                 precio=precio_unitario
             )
-
             db.session.add(venta_detalle)
 
+            # Descontar stock
             producto.cantidad_producto -= cantidad
 
         db.session.commit()
 
-        # --- PREPARACIÓN DE DATOS PARA PDF Y CORREO ---
-        # Datos para la plantilla del PDF
+        # Preparar datos para PDF
         datos_para_pdf = {
             'nombre_cliente': cliente.nombre_completo,
-            'contacto_cliente': cliente.correo, # Usar correo como contacto para el ejemplo
+            'contacto_cliente': cliente.correo,
             'cc_cliente': cliente.cedula,
-            'ciudad_cliente': 'N/A', # Si no tienes esta información, puedes omitirla o poner un valor por defecto
-            'fecha_generacion': fecha_actual.strftime('%d/%m/%Y %H:%M:%S %p.'),
-            'fecha_vencimiento': (fecha_actual).strftime('%Y/%m/%d'), # O la fecha de vencimiento real
+            'ciudad_cliente': 'N/A',
+            'fecha_generacion': fecha_actual.strftime('%d/%m/%Y'),
+            'hora_generacion': fecha_actual.strftime('%I:%M:%S %p'),
+            'fecha_vencimiento': fecha_actual.strftime('%Y/%m/%d'),
             'vendedor': vendedor.nombre,
-            'forma_pago': 'Contado', # O la forma de pago real de tu sistema
+            'forma_pago': 'Contado',
             'items_factura': [
-                {'referencia': d["producto"].id_producto,
-                 'descripcion': d["producto"].nombre_producto,
-                 'cantidad': d["cantidad"],
-                 'precio_unit': f"${d['precio_unitario']:.2f}", # Formato de moneda
-                 'valor_total_item': f"${d['total_producto']:.2f}"}
-                for d in detalles_compra
+                {
+                    'referencia': d["producto"].id_producto,
+                    'descripcion': d["producto"].nombre_producto,
+                    'cantidad': d["cantidad"],
+                    'precio_unit': f"${d['precio_unitario']:.2f}",
+                    'valor_total_item': f"${d['total_producto']:.2f}"
+                } for d in detalles_compra
             ],
-            'descuentos': '$0.00', # Si tienes descuentos, agrégalos aquí
+            'descuentos': '$0.00',
             'total_final': f"${total_venta:.2f}",
-            'valor_letras': convertir_a_letras(total_venta), # Implementa esta función
+            'valor_letras': convertir_a_letras(total_venta),
             'notas': 'Gracias por su compra en Microchip.'
         }
 
-        # Generar el PDF y obtenerlo como bytes en memoria
+        # Generar PDF y enviar correo
         pdf_bytes = generar_pdf(datos_para_pdf)
 
-        # Aquí preparas el diccionario con los datos que necesitas para el correo
         venta_info_correo = {
             "nombre_cliente": cliente.nombre_completo,
             "fecha": fecha_actual.strftime('%Y-%m-%d'),
-            "hora": hora_actual.strftime('%H:%M:%S'),
+            "hora": hora_actual,
             "folio": folio_venta,
             "total": total_venta,
             "vendedor": vendedor.nombre
         }
 
-        # Llamas a la función que envía la factura de forma asíncrona (en otro hilo)
-        # Ahora pasamos los bytes del PDF directamente
         enviar_factura_async(cliente.correo, pdf_bytes, venta_info_correo)
 
         return jsonify({"mensaje": "✅ Compra finalizada, registro guardado y factura enviada al correo."})
@@ -565,8 +591,6 @@ def finalizar_compra():
         db.session.rollback()
         print("Error en /finalizar_compra:", e)
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
-
-# --- Función auxiliar para convertir números a letras (ejemplo básico) ---
 
 def convertir_a_letras(numero):
     """
@@ -598,6 +622,7 @@ def convertir_a_letras(numero):
 
     except Exception as e:
         return f"Error al convertir el número: {e}"
+
 
 @app.route('/api/ventas')
 def api_ventas():
