@@ -9,6 +9,7 @@ from num2words import num2words
 import re
 import random
 import threading
+import pytz
 
 
 # Librerías para PDF y correo
@@ -16,7 +17,7 @@ import pdfkit
 # REMOVED: smtplib, email.mime.multipart, email.mime.application, email.mime.text
 # ADDED: Flask-Mail
 from flask_mail import Mail, Message
-import io # Necesario para manejar el PDF en memoria para Flask-Mail
+import io
 
 app = Flask(__name__)
 app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
@@ -584,10 +585,12 @@ def finalizar_compra():
             db.session.add(cliente)
             db.session.commit()
 
-        # Fecha y hora actual
-        fecha_actual = datetime.now()
+        # Obtener hora de Colombia correctamente
+        zona_colombia = pytz.timezone("America/Bogota")
+        fecha_actual = datetime.now(zona_colombia)
         hora_actual = fecha_actual.strftime("%H:%M:%S")
         folio_venta = f"F{fecha_actual.strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
+
 
         total_venta = 0
         detalles_compra = []
