@@ -703,3 +703,59 @@ window.onload = function () {
         retina_detect: true
     });
 };
+
+
+
+// Mostrar y cerrar el modal
+function abrirModalActualizarPerfil() {
+    document.getElementById("modalActualizarPerfil").style.display = "flex";
+}
+
+function cerrarModalActualizarPerfil() {
+    document.getElementById("modalActualizarPerfil").style.display = "none";
+    document.getElementById("formActualizarPerfil").reset(); // Limpia el formulario
+}
+
+// Envío del formulario con AJAX sin recargar la página
+document.getElementById("formActualizarPerfil").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const boton = form.querySelector("button[type='submit']");
+
+    boton.disabled = true;
+    boton.innerText = "Actualizando...";
+
+    try {
+        const res = await fetch("/actualizar_perfil", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showMessageModal("✅ Perfil actualizado correctamente", "success");
+
+            // Actualizar en tiempo real los datos visibles del perfil
+            document.querySelector(".valor.nombre").textContent = formData.get("nombre");
+            document.querySelector(".valor.apellido").textContent = formData.get("apellido");
+            document.querySelector(".valor.correo").textContent = formData.get("correo");
+
+            cerrarModalActualizarPerfil(); // Cierra y limpia el modal
+
+        } else {
+            showMessageModal("❌ " + (data.mensaje || "Error al actualizar perfil"), "error");
+        }
+
+    } catch (error) {
+        console.error("Error al actualizar perfil:", error);
+        showMessageModal("❌ Error al conectar con el servidor", "error");
+    } finally {
+        boton.disabled = false;
+        boton.innerText = "Guardar cambios";
+    }
+});
+
+

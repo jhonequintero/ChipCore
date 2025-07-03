@@ -194,27 +194,128 @@ function limpiarError() {
     document.getElementById("contrasena").classList.remove("input-error"); // Usando ID original 'contrasena'
 }
 
-// Inicialización de Particles.js
-// Se recomienda inicializar Particles.js solo una vez y cuando el DOM esté completamente cargado.
-window.onload = function () {
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Inicializa Particles.js
     particlesJS("particles-js", {
         particles: {
-            number: {
-                value: 80, // Valor de partículas
-                density: { enable: true, value_area: 800 }
-            },
+            number: { value: 80, density: { enable: true, value_area: 800 } },
             color: { value: "#ffffff" },
             shape: { type: "circle" },
-            opacity: { value: 0.5, random: false },
+            opacity: { value: 0.5 },
             size: { value: 3, random: true },
-            line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.4,
+                width: 1
+            },
             move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
         },
         interactivity: {
             detect_on: "canvas",
-            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
-            modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
+            events: {
+                onhover: { enable: true, mode: "grab" },
+                onclick: { enable: false }
+            },
+            modes: {
+                grab: { distance: 180, line_linked: { opacity: 1 } }
+            }
         },
         retina_detect: true
     });
-};
+
+    // === Recuperación de contraseña ===
+    const modalRecuperar = document.getElementById("modalRecuperar");
+    const modalVerificar = document.getElementById("modalVerificarCodigo");
+    let correoTemporal = "";
+
+    window.abrirModalRecuperar = () => {
+        modalRecuperar.style.display = "flex";
+    };
+
+    window.cerrarModalRecuperar = () => {
+        modalRecuperar.style.display = "none";
+        document.getElementById("correoRecuperar").value = "";
+    };
+
+    window.abrirModalVerificarCodigo = (correo) => {
+        correoTemporal = correo;
+        modalVerificar.style.display = "flex";
+    };
+
+    window.cerrarModalVerificarCodigo = () => {
+        modalVerificar.style.display = "none";
+        document.getElementById("codigoVerificacion").value = "";
+        document.getElementById("nuevaContrasena").value = "";
+    };
+
+    // === Enviar correo con código ===
+    document.getElementById("formRecuperar").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const correo = document.getElementById("correoRecuperar").value.trim();
+
+        if (!correo) return showMessageModal("❗ Ingresa tu correo", "warning");
+
+        try {
+            const res = await fetch("/enviar_codigo_verificacion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ correo })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                showMessageModal("📧 Código enviado al correo", "success");
+                cerrarModalRecuperar();
+                abrirModalVerificarCodigo(correo);
+            } else {
+                showMessageModal("❌ " + (data.mensaje || "Error al enviar código"), "error");
+            }
+        } catch (error) {
+            console.error("Error al enviar código:", error);
+            showMessageModal("❌ Error del servidor", "error");
+        }
+    });
+
+    // === Verificar código y cambiar contraseña ===
+    document.getElementById("formVerificarCodigo").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const codigo = document.getElementById("codigoVerificacion").value.trim();
+        const nueva = document.getElementById("nuevaContrasena").value.trim();
+
+        if (!codigo || !nueva) {
+            showMessageModal("❗ Todos los campos son obligatorios", "warning");
+            return;
+        }
+
+        try {
+            const res = await fetch("/verificar_codigo_y_cambiar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    correo: correoTemporal,
+                    codigo,
+                    nueva_contrasena: nueva
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                showMessageModal("🔒 Contraseña actualizada", "success");
+                cerrarModalVerificarCodigo();
+            } else {
+                showMessageModal("❌ " + (data.mensaje || "Código incorrecto"), "error");
+            }
+
+        } catch (error) {
+            console.error("Error al verificar código:", error);
+            showMessageModal("❌ Error al conectar", "error");
+        }
+    });
+});

@@ -435,12 +435,15 @@ input {
 }
 
 .divboton {
-    margin-top: 6vh;
-    width: 30%;
-    height: 10vh;
     display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    margin-top: 6vh;
+    width: 7em;
     justify-content: center;
 }
+
 
 .botonsito {
     padding: 15px 25px;
@@ -481,6 +484,53 @@ input {
 
 .botonsito:hover::before {
     width: 100%;
+}
+
+
+/* ---------------------------------modal de actualizar datos perfil-------------------------------- */
+.modalactualizar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    margin-top: 6vh;
+    background: white;
+    padding: 2vh 3vh;
+    border-radius: 1vh;
+    width: 35vh;
+    height: 44em;
+    text-align: left;
+    position: relative;
+}
+
+#formActualizarPerfil {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    margin-top: 6vh;
+
+}
+
+.cerrar {
+    position: absolute;
+    top: 1vh;
+    right: 1vh;
+    font-size: 2vh;
+    cursor: pointer;
 }
 
 /*------------------------------- pagina buscar producto de admin------------------------*/

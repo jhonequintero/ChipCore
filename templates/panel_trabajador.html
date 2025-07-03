@@ -69,15 +69,15 @@
                                     </div>
                                     <div class="campo">
                                         <span class="label">Nombre:</span>
-                                        <span class="valor">{{ datos.nombre }}</span>
+                                        <span class="valor nombre">{{ datos.nombre }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Apellido:</span>
-                                        <span class="valor">{{ datos.apellido }}</span>
+                                        <span class="valor apellido">{{ datos.apellido }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Correo:</span>
-                                        <span class="valor">{{ datos.correo }}</span>
+                                        <span class="valor correo">{{ datos.correo }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Rol:</span>
@@ -92,10 +92,41 @@
                                 </div>
                             </div>
                             <div class="divboton">
+                                <button type="button" class="botonsito" onclick="abrirModalActualizarPerfil()">Actualizar perfil</button>
                                 <button onclick="window.location.href='{{ url_for('inicio') }}'" class="botonsito">Cerrar sesión</button>
                             </div>
                         </div>
                     </div>
+
+                    <div id="modalActualizarPerfil" class="modalactualizar" style="display: none;">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarModalActualizarPerfil()">&times;</span>
+        <h2>Actualizar Perfil</h2>
+        <form id="formActualizarPerfil">
+             <label>Cédula:</label>
+            <span style="font-weight: bold;">{{ datos.id }}</span>
+            <input type="hidden" name="id_usuario" value="{{ datos.id }}">
+
+            <label>Nombre</label>
+            <input type="text" name="nombre" id="nuevo_nombre" value="{{ datos.nombre }}" required>
+
+            <label>Apellidos</label>
+            <input type="text" name="apellido" id="nuevo_apellido" value="{{ datos.apellido }}" required>
+
+            <label>Correo</label>
+            <input type="email" name="correo" id="nuevo_correo" value="{{ datos.correo }}" required>
+
+            <label>Contraseña actual</label>
+            <input type="password" name="contrasena_actual" required>
+
+            <label>Nueva contraseña</label>
+            <input type="password" name="nueva_contrasena">
+
+            <button type="submit">Guardar cambios</button>
+        </form>
+    </div>
+</div>
+
                 </div>
                 
                 <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">

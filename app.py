@@ -10,6 +10,7 @@ import re
 import random
 import threading
 
+
 # Librerías para PDF y correo
 import pdfkit
 # REMOVED: smtplib, email.mime.multipart, email.mime.application, email.mime.text
@@ -177,6 +178,46 @@ def login():
 
     return jsonify(success=False, error="Correo o contraseña incorrectos", campo="ambos")
 
+
+
+@app.route('/actualizar_perfil', methods=['POST'])
+def actualizar_perfil():
+    if 'usuario' not in session:
+        return jsonify({"success": False, "msg": "No has iniciado sesión."}), 401
+
+    user_id = session.get('id_usuario')
+    user = Usuario.query.filter_by(id_usuario=user_id).first()
+
+    if not user:
+        return jsonify({"success": False, "msg": "Usuario no encontrado"}), 404
+
+    # Obtener datos del formulario
+    nombre = request.form.get('nombre', '').strip()
+    apellido = request.form.get('apellido', '').strip()
+    correo = request.form.get('correo', '').strip()
+    contrasena_actual = request.form.get('contrasena_actual', '').strip()
+    nueva_contrasena = request.form.get('nueva_contrasena', '').strip()
+
+    # Verificar que la contraseña actual sea válida
+    if not check_password_hash(user.contrasena, contrasena_actual):
+        return jsonify({"success": False, "msg": "❌ Contraseña actual incorrecta"}), 403
+
+    # Actualizar campos
+    user.nombre = nombre
+    user.apellido = apellido
+    user.correo = correo
+
+    if nueva_contrasena:
+        user.contrasena = generate_password_hash(nueva_contrasena)
+
+    try:
+        db.session.commit()
+        return jsonify({"success": True, "msg": "✅ Perfil actualizado correctamente"})
+    except Exception as e:
+        db.session.rollback()
+        print("Error al actualizar perfil:", e)
+        return jsonify({"success": False, "msg": "❌ Error al actualizar perfil"}), 500
+    
 @app.route('/panel_admin')
 def panel_admin():
     if 'usuario' in session and session.get('tipo') == 'administrador':
@@ -264,6 +305,64 @@ def registrar_empleado():
 
 
     return jsonify(success=False, error="Acceso no autorizado.")
+
+
+@app.route('/recuperar_contrasena', methods=['POST'])
+def recuperar_contrasena():
+    data = request.get_json()
+    correo = data.get("correo")
+
+    usuario = Usuario.query.filter_by(correo=correo).first()
+    if not usuario:
+        return jsonify({"success": False, "msg": "Correo no registrado"})
+
+    # Generar token temporal de recuperación
+    token = secrets.token_urlsafe(32)
+
+    # Puedes guardarlo en base de datos o usar JWT
+    link = url_for('resetear_contrasena', token=token, _external=True)
+
+    # Envía el correo
+    enviar_correo(correo, "Recupera tu contraseña", f"Da clic aquí para restablecer: {link}")
+
+    return jsonify({"success": True})
+
+@app.route('/recuperar_cuenta')
+def recuperar_cuenta():
+    return render_template('recuperar_cuenta.html')
+
+@app.route('/verificar_correo', methods=['POST'])
+def verificar_correo():
+    data = request.get_json()
+    correo = data.get('correo')
+    usuario = Usuario.query.filter_by(correo=correo).first()
+    if usuario:
+        codigo = str(random.randint(100000, 999999))
+        session['codigo'] = codigo
+        session['usuario_id'] = usuario.id
+        enviar_correo(correo, 'Código de recuperación', f'Tu código es: {codigo}')
+        return jsonify(success=True)
+    return jsonify(success=False, message="Correo no encontrado")
+
+@app.route('/verificar_codigo', methods=['POST'])
+def verificar_codigo():
+    data = request.get_json()
+    if data.get('codigo') == session.get('codigo'):
+        return jsonify(success=True)
+    return jsonify(success=False, message="Código incorrecto")
+
+@app.route('/cambiar_contrasena', methods=['POST'])
+def cambiar_contrasena():
+    data = request.get_json()
+    nueva = data.get('nuevaContrasena')
+    usuario = Usuario.query.get(session.get('usuario_id'))
+    if usuario:
+        usuario.contrasena = generate_password_hash(nueva)
+        db.session.commit()
+        return jsonify(success=True)
+    return jsonify(success=False, message="Error actualizando contraseña")
+
+
 
 @app.route('/panel_trabajador')
 def panel_trabajador():

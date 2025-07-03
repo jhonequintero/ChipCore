@@ -9,22 +9,17 @@
 /* Estilos para el Modal de Mensajes */
 .message-modal {
     display: none;
-    /* Oculto por defecto */
     position: fixed;
     z-index: 1000;
-    /* Asegura que esté por encima de todo */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    /* Fondo oscuro semitransparente */
     display: flex;
-    /* Para centrar el contenido */
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(5px);
-    /* Efecto borroso de fondo */
 }
 
 .message-modal-contenido {
@@ -36,11 +31,9 @@
     text-align: center;
     animation: fadeInScale 0.3s ease-out forwards;
     transform: scale(0.9);
-    /* Empezar un poco más pequeño */
     opacity: 0;
 }
 
-/* Animación para el modal */
 @keyframes fadeInScale {
     to {
         transform: scale(1);
@@ -50,7 +43,6 @@
 
 .message-modal-contenido i {
     font-size: 3em;
-    /* Ícono más grande */
     margin-bottom: 15px;
 }
 
@@ -99,11 +91,10 @@
 .loading-button {
     cursor: not-allowed;
     background-color: #ccc !important;
-    /* O un color más oscuro */
     opacity: 0.8;
 }
 
-/* Tus estilos originales */
+
 #particles-js {
     position: absolute;
     width: 100%;
@@ -457,7 +448,6 @@ input:-webkit-autofill:active {
 }
 
 #correo {
-    /* ID original del campo correo */
     width: 20em;
     background-color: transparent !important;
     color: #9b9b9b !important;
@@ -465,7 +455,6 @@ input:-webkit-autofill:active {
 }
 
 .info_contra {
-    /* Clase original del contenedor del campo contraseña */
     background-color: transparent;
     color: black;
     position: relative;
@@ -479,7 +468,6 @@ input:-webkit-autofill:active {
     position: relative;
     top: 1em;
     width: 20em;
-    /* Tu ancho original */
 }
 
 .campo_con_icono {
@@ -499,7 +487,6 @@ input:-webkit-autofill:active {
 }
 
 .boton_ingresar {
-    /* Clase original del contenedor del botón de ingresar */
     display: flex;
     justify-content: center;
     text-align: center;
@@ -508,7 +495,6 @@ input:-webkit-autofill:active {
     top: 1em;
 }
 
-/* Este ID #boton no está en tu HTML, si lo usas deberías añadirlo */
 #boton {
     width: 80px;
     height: 20px;
@@ -562,6 +548,56 @@ input:-webkit-autofill:active {
     height: 150px;
     opacity: 1;
 }
+
+/* ------------ Modal Recuperar Contraseña -------------------*/
+.modal-recuperar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    background: white;
+    padding: 2vh 3vh;
+    border-radius: 1vh;
+    width: 35vh;
+    text-align: left;
+    position: relative;
+}
+
+.modal-contenido h3,
+p {
+    margin-bottom: 1vh;
+    color: black;
+}
+
+#formRecuperar input {
+    padding: 0.8vh;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.cerrar-- {
+    position: absolute;
+    top: 1vh;
+    right: 1vh;
+    font-size: 2vh;
+    color: black;
+    cursor: pointer;
+}
+
 
 /* pie de pagina footer */
 /* .footer {
