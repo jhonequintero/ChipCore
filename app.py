@@ -23,14 +23,14 @@ app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
 
 # --- INICIO DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
 
-# Configuración de wkhtmltopdf: se adapta al sistema operativo
+# Ruta al ejecutable de wkhtmltopdf
 if os.name == 'nt':
-    WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive - SENA\Documentos\Escritorio\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    WKHTMLTOPDF_DEFAULT_PATH = r'C:\wkhtmltopdf\bin\wkhtmltopdf.exe'  # <-- actualiza esta ruta si es necesario
 else:
-    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf' # O '/usr/bin/wkhtmltopdf'
+    WKHTMLTOPDF_DEFAULT_PATH = '/usr/local/bin/wkhtmltopdf'
 
 WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
-config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH) # Renombrado a config_pdf para evitar conflicto
+config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
 # Configuración de Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
