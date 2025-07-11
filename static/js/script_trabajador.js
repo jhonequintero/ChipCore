@@ -31,9 +31,9 @@ window.onload = function () {
 };
 
 
-// Función para mostrar mensajes modales (NO usar alert)
+// Función para mostrar mensajes modales 
 function showMessageModal(message, type = 'info') {
-    const modal = document.getElementById('modalMensajes'); // ID del modal en HTML
+    const modal = document.getElementById('modalMensajes'); 
     const modalText = document.getElementById('textoModalMensajes');
     const modalIcon = document.getElementById('iconoModalMensajes');
 
@@ -46,7 +46,7 @@ function showMessageModal(message, type = 'info') {
     modalText.textContent = message;
     // Remueve clases anteriores y añade la nueva para el tipo de mensaje
     modal.classList.remove('success', 'error', 'warning');
-    modal.classList.add(type); // Clase para estilos (success, error, warning)
+    modal.classList.add(type); 
 
     if (modalIcon) {
         modalIcon.classList.remove('fa-check-circle', 'fa-times-circle', 'fa-exclamation-triangle');
@@ -57,13 +57,12 @@ function showMessageModal(message, type = 'info') {
         } else if (type === 'warning') {
             modalIcon.classList.add('fa-exclamation-triangle');
         } else {
-            modalIcon.classList.add('fa-info-circle'); // Default icon
+            modalIcon.classList.add('fa-info-circle'); 
         }
     }
 
-    modal.style.display = 'flex'; // Muestra el modal
+    modal.style.display = 'flex'; 
 
-    // Ocultar automáticamente después de 3 segundos
     setTimeout(() => {
         modal.style.display = 'none';
     }, 1500);
@@ -73,7 +72,6 @@ function showMessageModal(message, type = 'info') {
 
 
 
-// Función para deslizar una ventana (modal)
 function deslizarventana() {
     document.getElementById('ventana').classList.toggle('open');
 }
@@ -162,7 +160,7 @@ async function verificarYAgregar(id, cantidad) {
 }
 
 // Funciones para modificar la cantidad de productos en el carrito
-function agregarAlCarrito(producto) { // Esta función podría no ser necesaria si solo usas verificarYAgregar
+function agregarAlCarrito(producto) { 
     const existe = carrito.find(p => p.id === producto.id);
     if (existe) {
         existe.cantidad += producto.cantidad;

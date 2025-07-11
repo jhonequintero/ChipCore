@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0%;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+        }
+
+        body {
+            background-color: black;
+        }
+
+        .contenedor_principal {
+            width: 100%;
+            height: 100vh;
+            background-color: #ddd;
+        }
+
+        .contenedor_encabezado {
+            width: 100%;
+            height: 10%;
+            display: flex;
+        }
+
+        .contenedor_img {
+            width: 20%;
+            height: auto;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #imagen_1 {
+            width: 11em;
+            margin-left: 3em;
+            height: 2.8em;
+        }
+
+
+        .contenedor_inicio-secion {
+            width: 80%;
+            height: auto;
+            display: flex;
+            justify-content: flex-end;
+            background-color: black;
+
+        }
+
+        .contenedor_inputs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: auto;
+            display: flex;
+            margin-right: 7em;
+            background-color: black;
+        }
+
+        #input_correo,
+        #input_contraseña {
+            border: none;
+            width: 10em;
+            height: 2.5em;
+            margin: 0.5em;
+            border-radius: 0.5em;
+            padding-left: 0.5em;
+        }
+
+        #boto_1 {
+            background-color: #FF8C42;
+            color: white;
+            border: none;
+            width: 6em;
+            height: 2.5em;
+            margin: 0.5em;
+            border-radius: 0.5em;
+        }
+
+        .contenedor_section {
+            background-color: white;
+            width: 100%;
+            height: 65%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contenedor_informacion {
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 30%;
+            height: 60%;
+            border-radius: 0.5em;
+        }
+
+        .linea_cont_1 {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            width: 100%;
+            height: 20%;
+        }
+
+        .linea_cont_2 {
+            display: grid;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            width: 100%;
+            height: 50%;
+        }
+
+        #titulo_1 {
+            margin-left: 1em;
+            font-size: 20px;
+        }
+
+        #titulo_2 {
+            margin-top: 1em;
+            margin-left: 1em;
+            font-size: 17px;
+        }
+
+        #input_correo_unico {
+            width: 90%;
+            height: 2.5em;
+            margin: 1.5em;
+            border-radius: 0.5em;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .linea_cont_3 {
+            width: 100%;
+            height: 3em;
+            display: flex;
+            justify-content: flex-end;
+
+        }
+
+        #boto_2 {
+            border: none;
+            width: 8em;
+            height: 2.5em;
+            margin: 0.5em;
+            border-radius: 0.5em;
+        }
+
+        #boto_3 {
+            background-color: #FF8C42;
+            color: white;
+            border: none;
+            width: 8em;
+            height: 2.5em;
+            margin: 0.5em;
+            border-radius: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="contenedor_principal">
+        <div class="contenedor_encabezado">
+            <div class="contenedor_img">
+                <img id="imagen_1"  src="{{ url_for('static', filename='img/logo_2.png') }}" alt="imagen">
+            </div>
+            <form id="formLoginHeader" class="contenedor_inicio-secion">
+  <div class="contenedor_inputs">
+    <input type="email" name="correo" id="input_correo" placeholder="Correo Electrónico" required>
+    <input type="password" name="contrasena" id="input_contraseña" placeholder="Contraseña" required>
+    <button type="submit" id="boto_1">Login</button>
+  </div>
+</form>
+
+        </div>
+        <div class="contenedor_section">
+            <div class="contenedor_informacion">
+                <div class="linea_cont_1">
+                    <h4 id="titulo_1">Encuentra tu cuenta</h4>
+                </div>
+                <div class="linea_cont_2">
+                    <p id="titulo_2">
+                        Inice sesión o ingrese su correo electrónico para buscar su cuenta.
+                    </p>
+                    <input type="text" name="correo_electronico" id="input_correo_unico"
+                        placeholder="Correo Electrónico ">
+                </div>
+                <div class="linea_cont_3">
+                    <button id="boto_2" type="button">
+                        Cancelar
+                    </button>
+                    <button id="boto_3" type="button">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+<!-- Modal para mensajes (éxito, error, advertencia) -->
+    <div id="modalMensajes" class="message-modal" style="display: none;">
+        <div class="message-modal-contenido">
+            <i id="iconoModalMensajes" class="fas"></i>
+            <p id="textoModalMensajes"></p>
+        </div>
+    </div>
+
+</body>
+
+ <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</html>

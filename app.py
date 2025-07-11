@@ -1,7 +1,6 @@
 from flask import Flask, request, redirect, session, url_for, render_template, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, cast, Integer
-
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
@@ -10,36 +9,28 @@ import re
 import random
 import threading
 import pytz
-
-
-# Librerías para PDF y correo
 import pdfkit
-# REMOVED: smtplib, email.mime.multipart, email.mime.application, email.mime.text
-# ADDED: Flask-Mail
 from flask_mail import Mail, Message
 import io
 
 app = Flask(__name__)
 app.secret_key = 'Clave_JhoneiderQuintero_chipcore_2023'
 
+
+
 # --- INICIO DE CAMBIOS PARA WKHTMLTOPDF Y FLASK-MAIL ---
-
-# Configuración de wkhtmltopdf: se adapta al sistema operativo
 if os.name == 'nt':
-    WKHTMLTOPDF_DEFAULT_PATH = r'C:\Users\JHONEYDER QUINTERO\OneDrive\Music\Correo\wkhtmltopdf\wkhtmltopdf.exe'
-
+    WKHTMLTOPDF_PATH = r"C:\wkhtmltopdf\bin\wkhtmltopdf.exe"
+    config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 else:
-    WKHTMLTOPDF_DEFAULT_PATH = None
-
-WKHTMLTOPDF_PATH = os.environ.get('WKHTMLTOPDF_PATH', WKHTMLTOPDF_DEFAULT_PATH)
-config_pdf = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH) # Renombrado a config_pdf para evitar conflicto
+    config_pdf = None  
 
 # Configuración de Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'marcelaquintero973@gmail.com'
-app.config['MAIL_PASSWORD'] = 'dzarsqoqqhxpqcub' # ¡ADVERTENCIA: Usa una contraseña de aplicación de Gmail!
+app.config['MAIL_PASSWORD'] = 'dzarsqoqqhxpqcub' 
 app.config['MAIL_DEFAULT_SENDER'] = 'marcelaquintero973@gmail.com'
 
 mail = Mail(app) # Inicializa Flask-Mail con la aplicación
@@ -111,7 +102,7 @@ class VentaDetalle(db.Model):
     id_venta = db.Column(db.Integer, db.ForeignKey('venta_cabecera.id_venta'))
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'))
     cantidad = db.Column(db.Integer)
-    precio = db.Column(db.Float) # Este es el precio unitario del producto en el momento de la venta
+    precio = db.Column(db.Float) 
 
     venta = db.relationship('VentaCabecera', backref='detalles')
     producto = db.relationship('Producto')
@@ -328,41 +319,6 @@ def recuperar_contrasena():
     enviar_correo(correo, "Recupera tu contraseña", f"Da clic aquí para restablecer: {link}")
 
     return jsonify({"success": True})
-
-@app.route('/recuperar_cuenta')
-def recuperar_cuenta():
-    return render_template('recuperar_cuenta.html')
-
-@app.route('/verificar_correo', methods=['POST'])
-def verificar_correo():
-    data = request.get_json()
-    correo = data.get('correo')
-    usuario = Usuario.query.filter_by(correo=correo).first()
-    if usuario:
-        codigo = str(random.randint(100000, 999999))
-        session['codigo'] = codigo
-        session['usuario_id'] = usuario.id
-        enviar_correo(correo, 'Código de recuperación', f'Tu código es: {codigo}')
-        return jsonify(success=True)
-    return jsonify(success=False, message="Correo no encontrado")
-
-@app.route('/verificar_codigo', methods=['POST'])
-def verificar_codigo():
-    data = request.get_json()
-    if data.get('codigo') == session.get('codigo'):
-        return jsonify(success=True)
-    return jsonify(success=False, message="Código incorrecto")
-
-@app.route('/cambiar_contrasena', methods=['POST'])
-def cambiar_contrasena():
-    data = request.get_json()
-    nueva = data.get('nuevaContrasena')
-    usuario = Usuario.query.get(session.get('usuario_id'))
-    if usuario:
-        usuario.contrasena = generate_password_hash(nueva)
-        db.session.commit()
-        return jsonify(success=True)
-    return jsonify(success=False, message="Error actualizando contraseña")
 
 
 
@@ -778,14 +734,7 @@ def api_ventas():
 
     return jsonify(resultado)
 
-# ---
-### *Funciones de Correo y PDF Actualizadas*
 
-# Ahora estas funciones son mucho más limpias y aprovechan Flask-Mail y las plantillas Jinja2.
-
-# ```python
-# --- Función para enviar el correo (ACTUALIZADA) ---
-# Ahora recibe pdf_data que son los bytes del PDF, no una ruta de archivo.
 def enviar_factura(destinatario, pdf_data, venta_info):
     asunto = "Factura de tu compra en Microchip"
 
@@ -815,32 +764,29 @@ def enviar_factura(destinatario, pdf_data, venta_info):
 
     except Exception as e:
         print(f"❌ Error al enviar correo a {destinatario}: {e}")
-        print(f"Error detallado: {e}") # Para obtener más información en caso de fallo
+        print(f"Error detallado: {e}") 
 
-# Función para llamar enviar_factura en un hilo separado (igual, pero ahora recibe bytes)
 def enviar_factura_async(destinatario, pdf_data, venta_info):
     hilo = threading.Thread(target=enviar_factura, args=(destinatario, pdf_data, venta_info))
     hilo.start()
 
 
-# --- Función para generar PDF (ACTUALIZADA) ---
-# Ahora recibe un diccionario de datos que se pasará directamente a la plantilla.
-# Devuelve los bytes del PDF, no guarda un archivo en disco.
 def generar_pdf(datos_para_pdf):
-    # Renderiza el HTML del PDF usando la plantilla Jinja2
-    with app.app_context(): # Necesario para usar render_template en un hilo.
-        # Es importante pasar request.url_root si tu HTML del PDF usa url_for('static', ...)
-        # para que WeasyPrint pueda encontrar las imágenes/CSS.
+    with app.app_context(): 
         html_string = render_template('factura_pdf.html', **datos_para_pdf) # Desempaqueta el diccionario
 
-    # Genera el PDF desde el string HTML y lo guarda en un buffer de bytes
     # Usamos configuration=config_pdf que ya definimos globalmente.
     pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
-    return pdf_bytes # Retorna los bytes del PDF
+    return pdf_bytes
 
 # --- Tu ruta de logout ---
 @app.route('/logout')
 def logout():
+    """
+    Cierra la sesi n actual y redirige al usuario al inicio.
+
+    No recibe par metros ni devuelve nada, solo redirige a la p gina de inicio.
+    """
     session.clear()
     return redirect(url_for('inicio'))
 

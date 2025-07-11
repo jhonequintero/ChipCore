@@ -1,5 +1,5 @@
 
-// Función para mostrar mensajes modales (NO usar alert)
+// Función para mostrar mensajes modales 
 function showMessageModal(message, type = 'info') {
     const modal = document.getElementById('modalMensajes'); // ID del modal en HTML
     const modalText = document.getElementById('textoModalMensajes');
@@ -14,7 +14,7 @@ function showMessageModal(message, type = 'info') {
     modalText.textContent = message;
     // Remueve clases anteriores y añade la nueva para el tipo de mensaje
     modal.classList.remove('success', 'error', 'warning');
-    modal.classList.add(type); // Clase para estilos (success, error, warning)
+    modal.classList.add(type);
 
     if (modalIcon) {
         modalIcon.classList.remove('fa-check-circle', 'fa-times-circle', 'fa-exclamation-triangle');
@@ -25,13 +25,13 @@ function showMessageModal(message, type = 'info') {
         } else if (type === 'warning') {
             modalIcon.classList.add('fa-exclamation-triangle');
         } else {
-            modalIcon.classList.add('fa-info-circle'); // Default icon
+            modalIcon.classList.add('fa-info-circle');
         }
     }
 
-    modal.style.display = 'flex'; // Muestra el modal
+    modal.style.display = 'flex';
 
-    // Ocultar automáticamente después de 3 segundos
+
     setTimeout(() => {
         modal.style.display = 'none';
     }, 1500);
@@ -41,7 +41,6 @@ function showMessageModal(message, type = 'info') {
 
 
 
-// Función para deslizar una ventana (modal)
 function deslizarventana() {
     document.getElementById('ventana').classList.toggle('open');
 }
@@ -96,8 +95,8 @@ document.getElementById("form-editar-producto").addEventListener("submit", funct
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                cerrarModal(); // Cierra el modal
-                form.reset(); // Limpia el formulario
+                cerrarModal();
+                form.reset();
                 showMessageModal("✅ Producto actualizado correctamente", "success");
             } else {
                 showMessageModal(data.error || "❌ No se pudo actualizar", "error");
@@ -115,7 +114,6 @@ document.getElementById("form-editar-producto").addEventListener("submit", funct
         });
 });
 
-// --- Lógica del Carrito de Compras ---
 
 let carrito = []; // glabal
 
@@ -186,7 +184,7 @@ async function verificarYAgregar(id, cantidad) {
 }
 
 // Funciones para modificar la cantidad de productos en el carrito
-function agregarAlCarrito(producto) { // Esta función podría no ser necesaria si solo usas verificarYAgregar
+function agregarAlCarrito(producto) {
     const existe = carrito.find(p => p.id === producto.id);
     if (existe) {
         existe.cantidad += producto.cantidad;
@@ -389,10 +387,8 @@ async function cambiarEstadoUsuario(id_usuario) {
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicialización de la página al cargar el DOM
     Enseñarpag('divperfil');
 
-    // Manejador de evento para el botón de deslizar ventana
     const btnDeslizar = document.querySelector('button');
     if (btnDeslizar) {
         btnDeslizar.addEventListener('click', deslizarventana);
@@ -527,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Función para filtrar usuarios por cédula sin dañar el diseño
+    // Función para filtrar usuarios por cédula 
     function filtrarUsuariosPorCedula() {
         const input = document.getElementById("buscadorCedula");
         const texto = input.value.trim().toLowerCase();
@@ -541,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cedula = cedulaElemento?.textContent.trim().toLowerCase() || "";
 
             if (cedula.includes(texto) || texto === "") {
-                user.style.display = "grid"; // mantener el layout
+                user.style.display = "grid";
                 encontrados++;
             } else {
                 user.style.display = "none";
@@ -743,8 +739,7 @@ document.getElementById("formActualizarPerfil").addEventListener("submit", async
             document.querySelector(".valor.apellido").textContent = formData.get("apellido");
             document.querySelector(".valor.correo").textContent = formData.get("correo");
 
-            cerrarModalActualizarPerfil(); // Cierra y limpia el modal
-
+            cerrarModalActualizarPerfil();
         } else {
             showMessageModal("❌ " + (data.mensaje || "Error al actualizar perfil"), "error");
         }
