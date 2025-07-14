@@ -2,91 +2,93 @@
 
 
 
-
 document.addEventListener("DOMContentLoaded", function () {
-    // Inicializa Particles.js
-    particlesJS("particles-js", {
-        particles: {
-            number: { value: 80, density: { enable: true, value_area: 800 } },
-            color: { value: "#ffffff" },
-            shape: { type: "circle" },
-            opacity: { value: 0.5 },
-            size: { value: 3, random: true },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: "#ffffff",
-                opacity: 0.4,
-                width: 1
+    // Solo inicializa ParticlesJS si el div existe
+    const particlesDiv = document.getElementById("particles-js");
+    if (particlesDiv && typeof particlesJS !== "undefined") {
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5 },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#ffffff",
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
             },
-            move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
-        },
-        interactivity: {
-            detect_on: "canvas",
-            events: {
-                onhover: { enable: true, mode: "grab" },
-                onclick: { enable: false }
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: false }
+                },
+                modes: {
+                    grab: { distance: 180, line_linked: { opacity: 1 } }
+                }
             },
-            modes: {
-                grab: { distance: 180, line_linked: { opacity: 1 } }
+            retina_detect: true
+        });
+
+        // === Recuperación de contraseña ===
+        const modalRecuperar = document.getElementById("modalRecuperar");
+        const modalVerificar = document.getElementById("modalVerificarCodigo");
+        let correoTemporal = "";
+
+        window.abrirModalRecuperar = () => {
+            modalRecuperar.style.display = "flex";
+        };
+
+        window.cerrarModalRecuperar = () => {
+            modalRecuperar.style.display = "none";
+            document.getElementById("correoRecuperar").value = "";
+        };
+
+        window.abrirModalVerificarCodigo = (correo) => {
+            correoTemporal = correo;
+            modalVerificar.style.display = "flex";
+        };
+
+        window.cerrarModalVerificarCodigo = () => {
+            modalVerificar.style.display = "none";
+            document.getElementById("codigoVerificacion").value = "";
+            document.getElementById("nuevaContrasena").value = "";
+        };
+
+        // === Enviar correo con código ===
+        document.getElementById("formRecuperar").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const correo = document.getElementById("correoRecuperar").value.trim();
+
+            if (!correo) return showMessageModal("❗ Ingresa tu correo", "warning");
+
+            try {
+                const res = await fetch("/enviar_codigo_verificacion", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ correo })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showMessageModal("📧 Código enviado al correo", "success");
+                    cerrarModalRecuperar();
+                    abrirModalVerificarCodigo(correo);
+                } else {
+                    showMessageModal("❌ " + (data.mensaje || "Error al enviar código"), "error");
+                }
+            } catch (error) {
+                console.error("Error al enviar código:", error);
+                showMessageModal("❌ Error del servidor", "error");
             }
-        },
-        retina_detect: true
-    });
-
-    // === Recuperación de contraseña ===
-    const modalRecuperar = document.getElementById("modalRecuperar");
-    const modalVerificar = document.getElementById("modalVerificarCodigo");
-    let correoTemporal = "";
-
-    window.abrirModalRecuperar = () => {
-        modalRecuperar.style.display = "flex";
-    };
-
-    window.cerrarModalRecuperar = () => {
-        modalRecuperar.style.display = "none";
-        document.getElementById("correoRecuperar").value = "";
-    };
-
-    window.abrirModalVerificarCodigo = (correo) => {
-        correoTemporal = correo;
-        modalVerificar.style.display = "flex";
-    };
-
-    window.cerrarModalVerificarCodigo = () => {
-        modalVerificar.style.display = "none";
-        document.getElementById("codigoVerificacion").value = "";
-        document.getElementById("nuevaContrasena").value = "";
-    };
-
-    // === Enviar correo con código ===
-    document.getElementById("formRecuperar").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const correo = document.getElementById("correoRecuperar").value.trim();
-
-        if (!correo) return showMessageModal("❗ Ingresa tu correo", "warning");
-
-        try {
-            const res = await fetch("/enviar_codigo_verificacion", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ correo })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                showMessageModal("📧 Código enviado al correo", "success");
-                cerrarModalRecuperar();
-                abrirModalVerificarCodigo(correo);
-            } else {
-                showMessageModal("❌ " + (data.mensaje || "Error al enviar código"), "error");
-            }
-        } catch (error) {
-            console.error("Error al enviar código:", error);
-            showMessageModal("❌ Error del servidor", "error");
-        }
-    });
+        });
+    }
 
     // === Verificar código y cambiar contraseña ===
     document.getElementById("formVerificarCodigo").addEventListener("submit", async function (e) {
@@ -215,136 +217,132 @@ function cerrarPopup(id) {
     }
 }
 
-document.getElementById("formLogin").addEventListener("submit", async function (e) {
-    e.preventDefault();
+// === LOGIN DE index.html ===
+const formLogin = document.getElementById("formLogin");
+if (formLogin) {
+    formLogin.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const correoInput = document.getElementById("correo");
+        const contrasenaInput = document.getElementById("contrasena");
+        const loginButton = document.getElementById("botonIniciarSesion");
+
+        const correo = correoInput.value.trim();
+        const contrasena = contrasenaInput.value.trim();
+
+        if (!correo || !contrasena) {
+            showMessageModal("Correo y contraseña son requeridos.", 'warning');
+            if (!correo) correoInput.classList.add("input-error");
+            if (!contrasena) contrasenaInput.classList.add("input-error");
+            return;
+        }
+
+        toggleLoading('botonIniciarSesion', true, 'Ingresar');
+
+        try {
+            const respuesta = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ correo, contrasena })
+            });
+
+            const data = await respuesta.json();
+
+            correoInput.classList.remove("input-error");
+            contrasenaInput.classList.remove("input-error");
+
+            if (data.success) {
+                showMessageModal("Inicio de sesión exitoso. Redireccionando...", 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1000);
+            } else {
+                showMessageModal(data.error, 'error');
+                if (data.campo === "contrasena") {
+                    contrasenaInput.value = "";
+                    contrasenaInput.classList.add("input-error");
+                } else if (data.campo === "ambos") {
+                    correoInput.value = "";
+                    contrasenaInput.value = "";
+                    correoInput.classList.add("input-error");
+                    contrasenaInput.classList.add("input-error");
+                }
+            }
+        } catch (error) {
+            console.error("Error en la petición de login:", error);
+            showMessageModal("Error al conectar con el servidor. Intenta de nuevo más tarde.", 'error');
+        } finally {
+            toggleLoading('botonIniciarSesion', false, 'Ingresar');
+        }
+    });
 
     const correoInput = document.getElementById("correo");
     const contrasenaInput = document.getElementById("contrasena");
-    const loginButton = document.getElementById("botonIniciarSesion");
 
-    const correo = correoInput.value.trim();
-    const contrasena = contrasenaInput.value.trim();
+    if (correoInput) correoInput.addEventListener("input", limpiarError);
+    if (contrasenaInput) contrasenaInput.addEventListener("input", limpiarError);
+}
 
-    if (!correo || !contrasena) {
-        showMessageModal("Correo y contraseña son requeridos.", 'warning');
-        if (!correo) correoInput.classList.add("input-error");
-        if (!contrasena) contrasenaInput.classList.add("input-error");
-        return;
-    }
+// === LOGIN DE recuperar_cuenta.html ===
+const formHeader = document.getElementById("formLoginHeader");
+if (formHeader) {
+    formHeader.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-    toggleLoading('botonIniciarSesion', true, 'Ingresar'); // Iniciar indicador de carga
+        const correoInput = document.getElementById("input_correo");
+        const contrasenaInput = document.getElementById("input_contraseña");
+        const correo = correoInput.value.trim();
+        const contrasena = contrasenaInput.value.trim();
 
-    try {
-        const respuesta = await fetch("/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ correo, contrasena })
-        });
-
-        const data = await respuesta.json();
-
-        // Limpiar estilos de error anteriores antes de mostrar nuevos
-        correoInput.classList.remove("input-error");
-        contrasenaInput.classList.remove("input-error");
-        const existingErrorMessage = document.getElementById("mensaje-error");
-        if (existingErrorMessage) {
-            existingErrorMessage.textContent = "";
-            existingErrorMessage.classList.remove("visible");
+        if (!correo || !contrasena) {
+            showMessageModal("Correo y contraseña son requeridos.", 'warning');
+            if (!correo) correoInput.classList.add("input-error");
+            if (!contrasena) contrasenaInput.classList.add("input-error");
+            return;
         }
 
+        toggleLoading("boto_1", true, "Login");
 
-        if (data.success) {
-            showMessageModal("Inicio de sesión exitoso. Redireccionando...", 'success');
-            setTimeout(() => {
-                window.location.href = data.redirect;
-            }, 1000);
-        } else {
-            showMessageModal(data.error, 'error');
+        try {
+            const respuesta = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ correo, contrasena })
+            });
 
+            const data = await respuesta.json();
 
-            if (data.campo === "contrasena") {
-                contrasenaInput.value = "";
-                contrasenaInput.classList.add("input-error");
-            } else if (data.campo === "ambos") {
-                correoInput.value = "";
-                contrasenaInput.value = "";
-                correoInput.classList.add("input-error");
-                contrasenaInput.classList.add("input-error");
+            correoInput.classList.remove("input-error");
+            contrasenaInput.classList.remove("input-error");
+
+            if (data.success) {
+                showMessageModal("Inicio de sesión exitoso. Redireccionando...", 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1000);
+            } else {
+                showMessageModal(data.error, 'error');
+                if (data.campo === "contrasena") {
+                    contrasenaInput.value = "";
+                    contrasenaInput.classList.add("input-error");
+                } else if (data.campo === "ambos") {
+                    correoInput.value = "";
+                    contrasenaInput.value = "";
+                    correoInput.classList.add("input-error");
+                    contrasenaInput.classList.add("input-error");
+                }
             }
+        } catch (error) {
+            console.error("Error en la petición de login:", error);
+            showMessageModal("Error al conectar con el servidor. Intenta de nuevo más tarde.", 'error');
+        } finally {
+            toggleLoading("boto_1", false, "Login");
         }
-    } catch (error) {
-        console.error("Error en la petición de login:", error);
-        showMessageModal("Error al conectar con el servidor. Intenta de nuevo más tarde.", 'error');
-    } finally {
-        toggleLoading('botonIniciarSesion', false, 'Ingresar'); // Detener indicador de carga
-    }
-});
+    });
+}
 
 
-document.getElementById("formLoginHeader").addEventListener("submit", async function (e) {
-    e.preventDefault();
 
-    const correoInput = document.getElementById("correo");
-    const contrasenaInput = document.getElementById("contrasena");
-    const loginButton = document.getElementById("botonIniciarSesion");
-
-    const correo = correoInput.value.trim();
-    const contrasena = contrasenaInput.value.trim();
-
-    if (!correo || !contrasena) {
-        showMessageModal("Correo y contraseña son requeridos.", 'warning');
-        if (!correo) correoInput.classList.add("input-error");
-        if (!contrasena) contrasenaInput.classList.add("input-error");
-        return;
-    }
-
-    toggleLoading('botonIniciarSesion', true, 'Ingresar'); // Iniciar indicador de carga
-
-    try {
-        const respuesta = await fetch("/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ correo, contrasena })
-        });
-
-        const data = await respuesta.json();
-
-        // Limpiar estilos de error anteriores antes de mostrar nuevos
-        correoInput.classList.remove("input-error");
-        contrasenaInput.classList.remove("input-error");
-        const existingErrorMessage = document.getElementById("mensaje-error");
-        if (existingErrorMessage) {
-            existingErrorMessage.textContent = "";
-            existingErrorMessage.classList.remove("visible");
-        }
-
-
-        if (data.success) {
-            showMessageModal("Inicio de sesión exitoso. Redireccionando...", 'success');
-            setTimeout(() => {
-                window.location.href = data.redirect;
-            }, 1000);
-        } else {
-            showMessageModal(data.error, 'error');
-
-
-            if (data.campo === "contrasena") {
-                contrasenaInput.value = "";
-                contrasenaInput.classList.add("input-error");
-            } else if (data.campo === "ambos") {
-                correoInput.value = "";
-                contrasenaInput.value = "";
-                correoInput.classList.add("input-error");
-                contrasenaInput.classList.add("input-error");
-            }
-        }
-    } catch (error) {
-        console.error("Error en la petición de login:", error);
-        showMessageModal("Error al conectar con el servidor. Intenta de nuevo más tarde.", 'error');
-    } finally {
-        toggleLoading('botonIniciarSesion', false, 'Ingresar'); // Detener indicador de carga
-    }
-});
 
 function togglePassword() {
     const input = document.getElementById("contrasena");

@@ -13,6 +13,95 @@
 
         }
 
+
+                
+        /* Estilos para el Modal de Mensajes */
+        .message-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .message-modal-contenido {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            text-align: center;
+            animation: fadeInScale 0.3s ease-out forwards;
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        @keyframes fadeInScale {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .message-modal-contenido i {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .message-modal-contenido p {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Colores según el tipo de mensaje */
+        .message-modal.success .message-modal-contenido {
+            border: 2px solid #4CAF50;
+        }
+
+        .message-modal.success .message-modal-contenido i {
+            color: #4CAF50;
+        }
+
+        .message-modal.error .message-modal-contenido {
+            border: 2px solid #f44336;
+        }
+
+        .message-modal.error .message-modal-contenido i {
+            color: #f44336;
+        }
+
+        .message-modal.warning .message-modal-contenido {
+            border: 2px solid #ff9800;
+        }
+
+        .message-modal.warning .message-modal-contenido i {
+            color: #ff9800;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Estilo para el botón cuando está cargando */
+        .loading-button {
+            cursor: not-allowed;
+            background-color: #ccc !important;
+            opacity: 0.8;
+        }
         body {
             background-color: black;
         }
@@ -164,50 +253,98 @@
             margin: 0.5em;
             border-radius: 0.5em;
         }
+
+        .boton_modal {
+            background-color: #FF8C42;
+            border: none;
+            color: white;
+            padding: 0.5em 1.2em;
+            border-radius: 0.5em;
+            cursor: pointer;
+            margin-right: 0.5em;
+        }
+
+        .boton_modal.cancelar {
+            background-color: #aaa;
+        }
+
+        .message-modal-contenido input {
+            padding: 0.5em;
+            border-radius: 0.4em;
+            border: 1px solid #ccc;
+            width: 100%;
+        }
+
     </style>
 </head>
 
 <body>
+
     <div class="contenedor_principal">
         <div class="contenedor_encabezado">
             <div class="contenedor_img">
                 <img id="imagen_1"  src="{{ url_for('static', filename='img/logo_2.png') }}" alt="imagen">
             </div>
             <form id="formLoginHeader" class="contenedor_inicio-secion">
-  <div class="contenedor_inputs">
-    <input type="email" name="correo" id="input_correo" placeholder="Correo Electrónico" required>
-    <input type="password" name="contrasena" id="input_contraseña" placeholder="Contraseña" required>
-    <button type="submit" id="boto_1">Login</button>
-  </div>
-</form>
-
+                <div class="contenedor_inputs">
+                    <input type="email" name="correo" id="input_correo" placeholder="Correo Electrónico" required>
+                    <input type="password" name="contrasena" id="input_contraseña" placeholder="Contraseña" required>
+                    <button type="submit" id="boto_1">Login</button>
+                </div>
+            </form>
         </div>
+
         <div class="contenedor_section">
-            <div class="contenedor_informacion">
-                <div class="linea_cont_1">
-                    <h4 id="titulo_1">Encuentra tu cuenta</h4>
+            <div id="flujo-recuperacion" class="contenedor_informacion">
+                <!-- Paso 1: Buscar cuenta -->
+                <div id="paso-buscar" class="paso visible">
+                    <div class="linea_cont_1">
+                        <h4 id="titulo_1">Encuentra tu cuenta</h4>
+                    </div>
+                    <div class="linea_cont_2">
+                        <p id="titulo_2">Ingresa tu correo para buscar tu cuenta.</p>
+                        <input type="email" id="input_correo_unico" placeholder="Correo Electrónico">
+                    </div>
+                    <div class="linea_cont_3">
+                        <button id="btn-cancelar-buscar" class="boton_modal cancelar">Cancelar</button>
+                        <button id="btn-buscar" class="boton_modal">Buscar</button>
+                    </div>
                 </div>
-                <div class="linea_cont_2">
-                    <p id="titulo_2">
-                        Inice sesión o ingrese su correo electrónico para buscar su cuenta.
-                    </p>
-                    <input type="text" name="correo_electronico" id="input_correo_unico"
-                        placeholder="Correo Electrónico ">
+
+                <!-- Paso 2: Enviar código -->
+                <div id="paso-enviar" class="paso" style="display: none;">
+                    <h3>¿Enviar código de verificación?</h3>
+                    <p>Se enviará un código al correo: <span id="correoMostrar"></span></p>
+                    <div class="linea_cont_3">
+                        <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
+                        <button id="btn-enviar" class="boton_modal">Enviar código</button>
+                    </div>
                 </div>
-                <div class="linea_cont_3">
-                    <button id="boto_2" type="button">
-                        Cancelar
-                    </button>
-                    <button id="boto_3" type="button">
-                        Buscar
-                    </button>
+
+                <!-- Paso 3: Verificar código -->
+                <div id="paso-verificar" class="paso" style="display: none;">
+                    <h3>Introduce el código</h3>
+                    <p>Hemos enviado un código al correo.</p>
+                    <input type="text" id="codigoVerificacion" placeholder="Código de verificación">
+                    <div class="linea_cont_3">
+                        <button id="btn-verificar" class="boton_modal">Verificar</button>
+                    </div>
+                </div>
+
+                <!-- Paso 4: Nueva contraseña -->
+                <div id="paso-nueva" class="paso" style="display: none;">
+                    <h3>Elige una nueva contraseña</h3>
+                    <p>Debe tener al menos 6 caracteres.</p>
+                    <input type="password" id="nuevaContrasena" placeholder="Nueva contraseña">
+                    <div class="linea_cont_3">
+                        <button id="btn-guardar" class="boton_modal">Guardar contraseña</button>
+                    </div>
                 </div>
             </div>
-
         </div>
-
     </div>
-<!-- Modal para mensajes (éxito, error, advertencia) -->
+
+    <!-- Modal para mensajes (éxito, error, advertencia) -->
     <div id="modalMensajes" class="message-modal" style="display: none;">
         <div class="message-modal-contenido">
             <i id="iconoModalMensajes" class="fas"></i>
@@ -215,8 +352,9 @@
         </div>
     </div>
 
-</body>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/recuperar_contra.js') }}"></script>
 
- <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
 
 </html>

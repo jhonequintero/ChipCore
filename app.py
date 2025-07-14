@@ -138,6 +138,86 @@ with app.app_context():
 @app.route('/')
 def inicio():
     return render_template('index.html', error=None)
+def generar_hash(contrasena):
+    return generate_password_hash(contrasena)
+
+
+def enviar_correo(destinatario, asunto, mensaje):
+    try:
+        msg = Message(asunto, recipients=[destinatario])
+        msg.body = mensaje
+        mail.send(msg)
+        print("✅ Correo enviado con Flask-Mail")
+    except Exception as e:
+        print("❌ Error al enviar correo:", e)
+        raise
+
+@app.route('/recuperar_cuenta')
+def recuperar_cuenta():
+    return render_template('recuperar_cuenta.html')
+@app.route('/verificar_correo_existente', methods=['POST'])
+def verificar_correo_existente():
+    data = request.get_json()
+    correo = data.get('correo')
+
+    usuario = Usuario.query.filter_by(correo=correo).first()
+    return jsonify({'existe': bool(usuario)})
+@app.route("/enviar_codigo_verificacion", methods=["POST"])
+def enviar_codigo_verificacion():
+    from random import randint
+
+    data = request.get_json()
+    correo = data.get("correo")
+
+    usuario = Usuario.query.filter_by(correo=correo).first()
+    if not usuario:
+        return jsonify({"mensaje": "Correo no registrado"}), 400
+
+    # Generar y guardar el código
+    codigo = str(randint(100000, 999999))
+    session["codigo_verificacion"] = codigo
+    session["correo_verificacion"] = correo
+
+    # Envía el código al correo
+    try:
+        enviar_correo(correo, "Código de verificación", f"Tu código es: {codigo}")
+        return jsonify({"mensaje": "Código enviado"}), 200
+    except Exception as e:
+        print("Error al enviar correo:", e)
+        return jsonify({"mensaje": "Error al enviar correo"}), 500
+@app.route("/verificar_codigo", methods=["POST"])
+def verificar_codigo():
+    data = request.get_json()
+    codigo = data.get("codigo")
+    correo = data.get("correo")
+
+    if session.get("correo_verificacion") == correo and session.get("codigo_verificacion") == codigo:
+        return jsonify({"validado": True})
+    else:
+        return jsonify({"validado": False})
+@app.route("/cambiar_contrasena", methods=["POST"])
+def cambiar_contrasena():
+    data = request.get_json()
+    correo = data.get("correo")
+    nueva_contrasena = data.get("nueva_contrasena")
+
+    usuario = Usuario.query.filter_by(correo=correo).first()
+    if not usuario:
+        return jsonify({"success": False}), 404
+
+    usuario.contrasena = generar_hash(nueva_contrasena)  # usa hashing
+    db.session.commit()
+
+    # Iniciar sesión automáticamente
+    session["usuario"] = usuario.correo
+    session["id_usuario"] = usuario.codigo
+    session["tipo"] = usuario.rol
+
+
+    if usuario.rol == "administrador":
+        return jsonify({"success": True, "redirect": url_for("panel_admin")})
+    else:
+        return jsonify({"success": True, "redirect": url_for("panel_trabajador")})
 
 @app.route('/login', methods=['POST'])
 def login():
