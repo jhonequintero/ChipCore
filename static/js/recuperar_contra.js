@@ -1,3 +1,62 @@
+
+
+
+// --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---
+// ParticlesJS se ejecuta cuando toda la página y sus recursos están cargados.
+window.onload = function () {
+    particlesJS("particles-js", {
+        particles: {
+            number: {
+                value: 200,
+                density: { enable: true, value_area: 800 }
+            },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5 },
+            size: { value: 3, random: true },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.4,
+                width: 1
+            },
+            move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
+        },
+        interactivity: {
+            detect_on: "canvas",
+            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
+            modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
+        },
+        retina_detect: true
+    });
+};
+// ...código existente...
+
+document.addEventListener("DOMContentLoaded", function () {
+    // ...código existente...
+
+    // Mostrar/ocultar contraseña con ojito tachado/destachado usando FontAwesome
+    const inputPass = document.getElementById("nuevaContrasena");
+    const iconoOjo = document.getElementById("iconEye");
+    const toggleBtn = document.getElementById("togglePassword");
+
+    if (toggleBtn && inputPass && iconoOjo) {
+        toggleBtn.addEventListener("click", function () {
+            if (inputPass.type === "password") {
+                inputPass.type = "text";
+                iconoOjo.classList.remove("fa-eye-slash");
+                iconoOjo.classList.add("fa-eye");
+            } else {
+                inputPass.type = "password";
+                iconoOjo.classList.remove("fa-eye");
+                iconoOjo.classList.add("fa-eye-slash");
+            }
+        });
+    }
+
+    // ...código existente...
+});
 document.addEventListener("DOMContentLoaded", function () {
     let correoTemporal = "";
 
@@ -58,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (res.ok && data.existe) {
                 correoTemporal = correo;
                 document.getElementById("correoMostrar").textContent = correo;
+                document.getElementById("correoMostrar2").textContent = correo;
                 mostrarPaso("paso-enviar");
             } else {
                 showMessageModal("❌ No existe ninguna cuenta con ese correo", "error");

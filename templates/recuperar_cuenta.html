@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -12,8 +13,20 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
         }
+        body {
+            background-color: black;
+        }
+        
+        #particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
 
-
+        
                 
         /* Estilos para el Modal de Mensajes */
         .message-modal {
@@ -104,17 +117,18 @@
         }
         body {
             background-color: black;
+            height: 10vh;
         }
 
         .contenedor_principal {
             width: 100%;
-            height: 100vh;
-            background-color: #ddd;
+            height: 90vh;
+            background-color: white;
         }
 
         .contenedor_encabezado {
             width: 100%;
-            height: 10%;
+            height: 12%;
             display: flex;
         }
 
@@ -141,6 +155,7 @@
             display: flex;
             justify-content: flex-end;
             background-color: black;
+           
 
         }
 
@@ -153,6 +168,7 @@
             display: flex;
             margin-right: 7em;
             background-color: black;
+            
         }
 
         #input_correo,
@@ -163,6 +179,7 @@
             margin: 0.5em;
             border-radius: 0.5em;
             padding-left: 0.5em;
+            z-index: 0;
         }
 
         #boto_1 {
@@ -173,6 +190,7 @@
             height: 2.5em;
             margin: 0.5em;
             border-radius: 0.5em;
+            z-index: 0;
         }
 
         .contenedor_section {
@@ -188,8 +206,9 @@
             background-color: white;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             width: 30%;
-            height: 60%;
+            height: 65%;
             border-radius: 0.5em;
+            z-index: 0;
         }
 
         .linea_cont_1 {
@@ -197,7 +216,7 @@
             align-items: center;
             border-bottom: 1px solid #ddd;
             width: 100%;
-            height: 20%;
+            height: 3.5em;
         }
 
         .linea_cont_2 {
@@ -205,7 +224,15 @@
             align-items: center;
             border-bottom: 1px solid #ddd;
             width: 100%;
-            height: 50%;
+            height: 9em;
+        }
+        
+        .linea_cont_2- {
+            display: grid;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            width: 100%;
+            height: 10em;
         }
 
         #titulo_1 {
@@ -233,6 +260,9 @@
             height: 3em;
             display: flex;
             justify-content: flex-end;
+            margin-top: 1em;
+            
+            
 
         }
 
@@ -274,11 +304,45 @@
             border: 1px solid #ccc;
             width: 100%;
         }
+        .div-centro{
+            display: flex;
+           
+        }
+        #codigoVerificacion{
+            width:40%;
+            height: 3em;
+            border:none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 0.5em;
+
+        }
+        
+        
+        
+        #nuevaContrasena{
+            width:95%;
+            height: 3em;
+            border:none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 0.5em;
+        }
+        .icono-ojo {
+            position: absolute;
+            left: 16em;
+            top: 10%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #333;
+            transition: transform 0.3s ease-in-out, color 0.3s;
+        }
+
 
     </style>
 </head>
 
 <body>
+      <div id="particles-js"></div>
 
     <div class="contenedor_principal">
         <div class="contenedor_encabezado">
@@ -313,8 +377,14 @@
 
                 <!-- Paso 2: Enviar código -->
                 <div id="paso-enviar" class="paso" style="display: none;">
-                    <h3>¿Enviar código de verificación?</h3>
-                    <p>Se enviará un código al correo: <span id="correoMostrar"></span></p>
+                    <div class="linea_cont_1">
+                         <h4 id="titulo_1">Restablecer  Contraseña</h4>
+                    </div>
+                    <div class="linea_cont_2">
+                         <p style="margin-left: 1em">Enviar codigo por correo <br>
+                        electronico <br><br> <span id="correoMostrar"></span></p>
+                    </div>
+                    
                     <div class="linea_cont_3">
                         <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
                         <button id="btn-enviar" class="boton_modal">Enviar código</button>
@@ -323,22 +393,56 @@
 
                 <!-- Paso 3: Verificar código -->
                 <div id="paso-verificar" class="paso" style="display: none;">
-                    <h3>Introduce el código</h3>
-                    <p>Hemos enviado un código al correo.</p>
-                    <input type="text" id="codigoVerificacion" placeholder="Código de verificación">
-                    <div class="linea_cont_3">
+                    <div class="linea_cont_1">
+                         <h4 id="titulo_1">Introduzca el código de seguridad</h4>
+                    </div>
+                    <div class="linea_cont_2-">
+                         <p style="margin-left: 1em;margin-top: 3em">Revisa tu correo electrónico para ver si hay un mensaje con <br>
+                         tu código. Este código tiene 6 dígitos.</p><br>
+                         <div class="div-centro">
+                            <input style="margin-bottom: 1em;margin-left:1em" type="text" id="codigoVerificacion" placeholder="Código de verificación">
+                            <p style="margin-left:2em" >Enviamos tu código a: <br> <span id="correoMostrar2"></span></p>
+
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.4em" class="linea_cont_3">
+                         <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
                         <button id="btn-verificar" class="boton_modal">Verificar</button>
                     </div>
                 </div>
 
                 <!-- Paso 4: Nueva contraseña -->
                 <div id="paso-nueva" class="paso" style="display: none;">
-                    <h3>Elige una nueva contraseña</h3>
-                    <p>Debe tener al menos 6 caracteres.</p>
-                    <input type="password" id="nuevaContrasena" placeholder="Nueva contraseña">
+                    <div class="linea_cont_1">
+                         <h4 id="titulo_1">Elija una nueva contraseña</h4>
+                    </div>
+                    <div class="linea_cont_2">
+                        <p style="margin-left: 1em;margin-top: 1em">Crea una contraseña nueva de al menos 6 caracteres. Una <br>
+                            contraseña segura es una combinación de letras, números y <br>
+                             signos de puntuación.
+                        </p>
+                        <div style="position: relative; margin-top: 1em; width: 100%;" class="div-centro">
+    <input
+        style="margin-bottom: 1em; margin-left:1em; width: 95%; padding-right: 2.5em;"
+        type="password"
+        id="nuevaContrasena"
+        placeholder="Nueva contraseña"
+    >
+    <button
+        type="button"
+        id="togglePassword"
+        style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0;"
+    >
+        <span id="iconEye">&#128065;</span>
+    </button>
+</div>
+                    </div>
+                    
                     <div class="linea_cont_3">
+                        <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
                         <button id="btn-guardar" class="boton_modal">Guardar contraseña</button>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -351,7 +455,7 @@
             <p id="textoModalMensajes"></p>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/recuperar_contra.js') }}"></script>
 
