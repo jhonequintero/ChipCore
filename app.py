@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, cast, Integer
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import random
+
 import os
 from num2words import num2words
 import re
@@ -39,7 +41,11 @@ mail = Mail(app) # Inicializa Flask-Mail con la aplicación
 
 
 # Configuración de la base de datos SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://user_chipcore:HGDR4ltK7hHdyOmt7uRISoA70RYNBHym@dpg-d19ag0idbo4c73d3q3s0-a.oregon-postgres.render.com:5432/base_microchip?sslmode=require"
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    "postgresql://chipcore_user:UpLHPjCcdGFgF0W9klY4IG7LmDKcPAnD"
+    "@dpg-d1v4vnqdbo4c73f6makg-a.oregon-postgres.render.com:5432/chipcore_base_datos"
+    "?sslmode=require"
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -584,9 +590,6 @@ def buscar_cliente():
         "correo": cliente.correo
     })
 
-from datetime import datetime
-import random
-from flask import jsonify, request, session
 
 @app.route('/finalizar_compra', methods=['POST'])
 def finalizar_compra():
