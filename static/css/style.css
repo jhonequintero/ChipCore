@@ -276,9 +276,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #8b8b8c;
+    background-color: black;
     width: 700px;
-    height: 420px;
+    height: 440px;
     border-radius: 10px;
     z-index: 1000;
 }
@@ -502,6 +502,7 @@ input:-webkit-autofill:active {
 
 .animated-button {
     position: relative;
+    left: -9em;
     display: inline-block;
     padding: 6px 25px;
     border: none;
@@ -550,6 +551,16 @@ input:-webkit-autofill:active {
 }
 
 /* ------------ Modal Recuperar Contraseña -------------------*/
+#recuperarContraseña {
+    color: #FF8C42;
+    text-decoration: none;
+    position: relative;
+    top: 2.4em;
+    left: 2em;
+
+
+}
+
 .modal-recuperar {
     position: fixed;
     top: 0;

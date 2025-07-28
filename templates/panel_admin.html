@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
+  <header>
         <div id="particles-js"></div>
         <div class="thead">
             <div class="Logoheader">
@@ -74,8 +74,10 @@
             <div class="section2">
                 <div class="sesioncontent flex contenido oculto" id="divperfil">
                     <div class="interfazperfil">
-                        <h1>Bienvenido.</h1>
-                        <div class="divinfoperfil">
+                        <div class="tituloperfil">
+                            <h6 style="margin-left: 2vh;">perfil</h1>
+                        </div>
+                        <div style="" class="divinfoperfil">
                             <div class="foto">
                                 <img src="{{ url_for('static', filename='img/iconoperfil.png') }}" class="iconoperfil" alt="Icono Perfil">
                             </div>
@@ -83,43 +85,42 @@
                                 <div class="ficha-empleado">
                                     <div class="campo">
                                         <span class="label">Cédula:</span>
-                                        <span class="valor">{{ datos.id }}</span>
+                                        <span style="overflow: hidden;" class="valor">{{ datos.id }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Nombre:</span>
-                                        <span class="valor nombre">{{ datos.nombre }}</span>
+                                        <span style="overflow: hidden;" class="valor nombre">{{ datos.nombre }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Apellido:</span>
-                                        <span class="valor apellido">{{ datos.apellido }}</span>
+                                        <span style="overflow: hidden;" class="valor apellido">{{ datos.apellido }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Correo:</span>
-                                        <span class="valor correo">{{ datos.correo }}</span>
+                                        <span style="overflow: hidden;" class="valor correo">{{ datos.correo }}</span>
                                     </div>
                                     <div class="campo">
                                         <span class="label">Rol:</span>
                                         <span class="valor">{{ datos.rol }}</span>
                                     </div>
-                                    <div class="campo">
+                                     <!--<div class="campo">
                                         <span class="label">Código User:</span>
-                                        <span class="valor">{{ datos.codigo_administrador }}</span>
-                                    </div>
+                                        <span class="valor">{{ datos.codigo_empleado }}</span>
+                                    </div>-->
                                 </div>
                             </div>
-                            <div class="divboton ">  <!--  <button type="button" class="botonsito" onclick="abrirModalActualizarPerfil()">Actualizar perfil</button> -->
-
-                                
+                            
+                        </div>
+                        <div style="" class="divboton ">  <!--  <button type="button" class="botonsito" onclick="abrirModalActualizarPerfil()">Actualizar perfil</button> -->
                                 <button onclick="window.location.href='{{ url_for('inicio') }}'" class="botonsito">Cerrar sesión</button>
                             </div>
-                        </div>
                         <!-- Modal Actualizar Perfil -->
 <div id="modalActualizarPerfil" class="modalactualizar" style="display: none;">
     <div class="modal-contenido">
         <span class="cerrar" onclick="cerrarModalActualizarPerfil()">&times;</span>
         <h2>Actualizar Perfil</h2>
         <form id="formActualizarPerfil">
-             <label>Cédula:</label>
+            <label>Cédula:</label>
             <span style="font-weight: bold;">{{ datos.id }}</span>
             <input type="hidden" name="id_usuario" value="{{ datos.id }}">
 
@@ -147,43 +148,44 @@
                 </div>
                 <div class="sesioncontent flex1 contenido oculto" id="divaggproducts">
                     <div class="divtituloagg">
-                        <h1>Agregar Producto.</h1>
+                        <h6 style="margin-left: 2vh;">Agregar Producto.</h1>
                     </div>
-                     <!-- <form class="formularioagg" action="/agregar_producto" method="POST"> -->
+                    <!-- <form class="formularioagg" action="/agregar_producto" method="POST"> -->
                     
                     <form class="formularioagg" id="form-producto">
                         <div class="divformularioagg">
                             <div class="preguntas">
                                 <div class="preguntardatos">
                                     <div class="pregunta">
-                                        <label for="nombre">- Ingrese el nombre del producto</label>
+                                        <label for="nombre">-1. Ingrese el nombre del producto</label>
                                         <input type="text" id="nombre" name="nombre_producto" required>
                                     </div>
                                     <div class="pregunta">
-                                        <label for="precio">- Ingrese el precio:</label>
+                                        <label for="precio">-2. Ingrese el precio:</label>
                                         <input type="number" id="precio" name="precio_producto" required>
                                     </div>
                                     <div class="pregunta">
-                                        <label for="cantidad">- Ingrese la cantidad del producto </label>
+                                        <label for="cantidad">-3. Ingrese la cantidad del producto </label>
                                         <input type="number" id="cantidad" name="cantidad_producto" required>
                                     </div>
                                     <div class="pregunta">
-                                        <label for="descripcion">- Ingrese una descripción breve del producto</label>
+                                        <label for="descripcion">-4. Ingrese una descripción breve del producto</label>
                                         <textarea id="descripcion" name="descripcion_producto" rows="5" cols="40" placeholder="Escribe una descripción..." required></textarea>
                                     </div>
                                 </div>
                             </div>
                             <div class="divbotonaggproducto">
-                                <button class="botonsito" type="submit">Enviar</button>
+                                <button style="height: 4.5vh; width: 25vh; margin-bottom: 10vh;" class="botonsito" type="submit">Enviar</button>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">
+                    <div class="divtituloagg">
+                        <h6 style="margin: 2vh;">Agregar Producto.</h6>
+                    </div>
                     <div class="divcuadrobusqueda">
-                        <div class="titulobuscar">
-                            <h1>Buscar Productos</h1>
-                        </div>
+                        
                         <div class="cuadrobusqueda">
                             <input class="cuadritobusqueda" type="text" id="buscador" placeholder="Escribe el id del producto">
                             <button class="botonbusquedaProductos">
@@ -197,19 +199,21 @@
                             </div>
                         </div>
                     </div>
+                    <div class="divtituloagg">
+                        <h6 style="margin: 2vh;">Productos.</h6>
+                    </div>
                     <div class="divmostrarproductos">
-                        <h1 style="right: 17vh;">
-                            Productos:
-                        </h1>
+                        <div style="border: 2px ridge; border-bottom: none" class="divtituloagg">
+                            <h6 style="margin: 2vh;">Productos Registrados.</h6>
+                        </div>
                         <div class="mostrarproductos">
-                            <h2>Productos registrados</h2>
+                            
                             <p id="mensaje-no-encontrado" style="display: none; color: red; font-weight: bold; text-align: center; margin-top: 2vh;">
                                 No se encontraron productos con esas iniciales.
                             </p>
                             {% if productos %}
                                 {% for p in productos %}
-                                    <div class="divdivproducto" id="uni">
-                                        <div class="botoneditaroeliminar">
+                                    <div class="divdivproducto" > <!--  id="uni" -->
                                             <div class="botonx">
                                                 <button class="buttonX btn-editar-producto"
                                                     data-id="{{ p.id_producto }}"
@@ -221,7 +225,7 @@
                                                 </button>
 
                                             </div>
-                                        </div>
+                                       
                                         <div class="divproducto">
                                             <div class="colum1">
                                                 <h3>{{ p.nombre_producto }}</h3>
@@ -237,12 +241,12 @@
                                                         <div class="insertid">{{ p.id_producto }}</div>
                                                     </div>
                                                     <div class="cantidad">
-                                                        <h3 style="margin-bottom: 1vh;">Cantidad:</h3>
+                                                        <h3 style="margin-top: 10vh;">Cantidad:</h3>
                                                         <div class="insertcantidad">
                                                             {% if p.cantidad_producto > 0 %}
                                                                 {{ p.cantidad_producto }}
                                                             {% else %}
-                                                                <span style="color: red; font-weight: bold;">AGOTADO</span>
+                                                                <span>AGOTADO</span>
                                                             {% endif %}
                                                         </div>
 
@@ -339,10 +343,11 @@
                     </div>
                 </div>
                 <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="actualizarstock">
+                    <div class="divtituloagg">
+                        <h6 style="margin-left: 2vh; margin-top: 1vh; margin-bottom: 1vh;">Buscar Usuarios por Cedula.</h6>
+                    </div>
                     <div class="divcuadrobusqueda">
-                        <div class="titulobuscar">
-                            <h1>Buscar Usuarios por Cedula.</h1>
-                        </div>
+                        
                         <div class="cuadrobusqueda">
                             <input class="cuadritobusqueda" type="text" id="buscadorCedula" placeholder="Escribe el id del producto">
                             <button class="botonbusquedausuarios">
@@ -357,11 +362,11 @@
                         </div>
                     </div>
                     <div style="margin-bottom: 4vh;" class="divmostrarproductos">
-                        <h1 style="right: 0vh;">
-                            Usuarios agregados
-                        </h1>
+                        <div style="margin-top: 0vh; width: 100%;" class="divtituloagg">
+                            <h6 style="margin-left: 2vh; margin-top: 1vh; margin-bottom: 1vh;">Buscar Usuarios por Cedula.</h6>
+                        </div>
                         <div class="mostrarusuarios">
-                            <h2>Usuarios registrados</h2>
+                            <h2>Usuarios Registradi000.s</h2>
                             <p id="mensaje-no-usuario" style="display: none; color: red; font-weight: bold; text-align: center; margin-top: 2vh;">
                                 No se encontraron usuarios con esa cédula.
                             </p>
@@ -443,7 +448,7 @@
                 </div>
                 <div class="sesioncontent flex1 contenido oculto" id="agregaruser">
                     <div class="divtituloagg">
-                        <h1>Agregar Usuario.</h1>
+                        <h6 style="margin-left: 2vh;">Agregar Usuario.</h6>
                     </div>
                     <form id="form-empleado" class="formularioagg">
                         <div class="divformularioagg">
@@ -472,51 +477,37 @@
                                 </div>
                             </div>
                             <div class="divbotonaggproducto">
-                                <button class="botonsito" type="submit">Enviar</button>
+                                <button style="height: 4.5vh; width: 25vh; margin-bottom: 10vh;" class="botonsito" type="submit">Enviar</button>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="sesioncontent flex1 contenido oculto" id="Recibos">
-                    <div class="divmostrarfacturas">
-                        <h2>Facturas generadas</h2>
-                        <table border="1" style="width:100%; border-collapse: collapse;">
-                            <thead>
-                                <tr>
-                                    <th>Folio</th>
-                                    <th>Fecha</th>
-                                    <th>Hora</th>
-                                    <th>Cliente</th>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Total</th>
-                                    <th>Vendedor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for venta in facturas %}
-                                    {% for detalle in venta.detalles %}
-                                        <tr>
-                                            <td>{{ venta.folio }}</td>
-                                            <td>{{ venta.fecha.strftime('%Y-%m-%d') }}</td>
-                                            <td>{{ venta.hora.strftime('%H:%M:%S') }}</td>
-                                            <td>{{ venta.cliente.nombre_completo }}</td>
-                                            <td>{{ detalle.producto.nombre_producto }}</td>
-                                            <td>{{ detalle.cantidad }}</td>
-                                            <td>${{ "%.2f"|format(detalle.precio) }}</td>
-                                            <td>${{ "%.2f"|format(detalle.cantidad * detalle.precio) }}</td>
-                                            <td>{{ venta.vendedor.nombre }} {{ venta.vendedor.apellido }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="9">No hay facturas generadas.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="divtituloagg ">
+                        <h6 style="margin-left: 2vh;">Facturas Registradas.</h6>
                     </div>
+
+                    <div class="divdisplayfactura">
+                        <div  class="divtituloagg sticky">
+                            <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
+                        </div>
+
+                        <div class="divfacturas">
+                            <!-- Aquí van muchas facturas para hacer scroll -->
+                            <div style="height: 300px; background: #eee; margin: 10px;">Factura 1</div>
+                            <div style="height: 300px; background: #ddd; margin: 10px;">Factura 2</div>
+                            <div style="height: 300px; background: #ccc; margin: 10px;">Factura 3</div>
+                        </div>
+
+                        <div class="divtituloagg sticky">
+                            <h6 style="margin-left: 2vh;">Facturas Registradas.</h6>
+                        </div>
+
+                        <div class="divgraficas">
+                        <!-- Aquí pueden ir más gráficos o contenido -->
+                        <div style="height: 300px; background: #bbb; margin: 10px;">Gráfica</div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -533,7 +524,11 @@
         <div class="tfoot">
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="{{ url_for('static', filename='js/script_admin.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/script_facturas.js') }}"></script>
 </body>
 </html>

@@ -233,7 +233,7 @@ h1 {
 
 /*-----------------------------ventana de informacion--------------------------------------*/
 .section2 {
-    width: 210vh;
+    width: 215vh;
     height: 100%;
     /*background: #e3e3e3;*/
     /* background-color: #5b5c59;*/
@@ -248,16 +248,15 @@ h1 {
 
 /*----------------------------------pagina perfil sesion------------------------------------*/
 .sesioncontent {
-    width: 72% !important;
+    width: 95% !important;
     background: #cdcccc !important;
     box-shadow: 2px 0px 7px rgba(0, 0, 0, 0.5);
-    margin-bottom: vh;
 
 
 }
 
 .interfazperfil {
-    width: 80%;
+    width: 95%;
     margin-top: 5vh;
     margin-bottom: 5vh;
     height: 80vh;
@@ -269,20 +268,42 @@ h1 {
     box-shadow: 2px 0px 7px rgba(0, 0, 0, 0.5);
 }
 
-.divinfoperfil {
-    width: 80%;
+.tituloperfil {
+    width: 90%;
     margin-top: 10vh;
-    height: 40vh;
+    height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3vh;
+    font-weight: bold;
+    background: #373737;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    color: #e3e3e3;
+    display: flex;
+    justify-content: flex-start;
+}
 
+.divinfoperfil {
+    width: 90%;
+    height: 40vh;
     background: #e4e4e4;
     box-shadow: 2px 0px 7px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
 }
 
+.interfazperfil .divboton {
+    display: flex;
+    align-items: end;
+    position: relative;
+    left: 65vh;
+    top: 10vh;
+}
+
 .infoperfil {
     width: 79%;
-    margin-top: 10vh;
+    margin-top: 15vh;
     height: 35%;
     display: flex;
     padding: 2vh 14vh 2vh 14vh;
@@ -290,14 +311,14 @@ h1 {
 }
 
 .foto {
-    width: 34vh;
-    height: 86%;
-    margin: 2vh;
+    width: 30vh;
+    height: 70%;
     background: #cdcccc;
     display: flex;
     align-items: center;
     border: 5px ridge rgb(116, 116, 116);
     border-radius: 1vh;
+    margin-left: 7vh;
 
 }
 
@@ -305,9 +326,9 @@ h1 {
     width: 60%;
     height: 70%;
     background: #e3e3e3;
-    border-radius: 2vh;
+
     box-shadow: 2px 0px 7px rgba(0, 0, 0, 0.5);
-    margin-right: 2vh;
+    margin-left: 15vh;
 }
 
 .casillainfo {
@@ -342,8 +363,10 @@ h1 {
     /* Izquierda etiqueta, derecha valor */
     gap: 10px 20px;
     max-width: 500px;
-    margin: 20px auto;
+    margin: 4px auto;
     font-family: sans-serif;
+    font-size: 2.3vh;
+
 }
 
 .campo {
@@ -376,24 +399,25 @@ h1 {
 .divtituloagg {
     margin-top: 5vh;
     width: 70%;
-    height: 20vh;
-    background: #ffffff;
-    border-radius: 1vh;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+    height: 5vh;
+    background: #373737;
+    display: flex;
+    align-items: center;
+    box-shadow: 1px -1px 5px rgba(0, 0, 0, 0.5), -2px -2px 7px rgba(0, 0, 0, 0.5);
+}
 
+h6 {
+    color: #e4e4e4;
+    font-size: 2.5vh;
 }
 
 .formularioagg {
     width: 70%;
     height: 80vh;
-    border-radius: 1vh;
-    margin-top: 5vh;
     margin-bottom: 5vh;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .divformularioagg {
-    border-radius: 1vh;
     width: 100%;
     height: 100%;
     background: #ffffff;
@@ -430,8 +454,9 @@ input {
 
 .divbotonaggproducto {
     display: flex;
+    align-items: flex-end;
     justify-content: center;
-    align-items: center;
+
 }
 
 .divboton {
@@ -440,26 +465,29 @@ input {
     gap: 1rem;
     align-items: stretch;
     margin-top: 6vh;
-    width: 7em;
+    width: 25vh;
+    height: 4vh;
+
     justify-content: center;
 }
 
 
 .botonsito {
-    padding: 15px 25px;
     border: unset;
-    border-radius: 15px;
+    border-radius: 0px;
     color: #212121;
     z-index: 1;
     background: #e8e8e8;
     position: relative;
     font-weight: 1000;
-    font-size: 17px;
+    font-size: 13px;
     -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
     box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
     transition: all 250ms;
     overflow: hidden;
     cursor: pointer;
+    width: 100%;
+    height: 100%;
 }
 
 .botonsito::before {
@@ -469,7 +497,6 @@ input {
     left: 0;
     height: 100%;
     width: 0;
-    border-radius: 15px;
     background-color: #ff8800;
     z-index: -1;
     -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
@@ -544,13 +571,12 @@ input {
 
 .divcuadrobusqueda {
     width: 70%;
-    margin-top: 5vh;
+
     height: 30vh;
     display: flex;
     flex-direction: column;
     background: #ffffff;
-    border-radius: 2vh;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
     overflow: visible;
 }
 
@@ -628,10 +654,8 @@ input {
 /*--------------------------Productos--------------------*/
 .divmostrarproductos {
     width: 70%;
-    margin-top: 5vh;
     height: 80vh;
     background: #ffffff;
-    border-radius: 1vh;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
@@ -639,13 +663,12 @@ input {
 }
 
 .mostrarproductos {
-    margin-top: 4vh;
     width: 70%;
     height: 50vh;
-    box-shadow: inset 4px 4px 78px rgba(0, 0, 0, 0.25);
+    background: #dedcdc;
     overflow-y: auto;
     border: 3px ridge;
-    border-radius: 1vh;
+    border-top: none;
     margin-bottom: 5vh;
     padding-bottom: 1vh;
 
@@ -662,20 +685,26 @@ input {
     display: flex;
     flex-direction: row;
     max-width: 600px;
-    background: #ffffff;
+    background: transparent;
     border-radius: 0.5vh;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+    width: 95%;
+    height: 20vh;
     /* overflow: hidden; */
 }
 
 
 
+.divdivproducto:hover {
+    background: transparent !important;
+
+
+}
 
 
 
 .divproducto {
     margin-left: -5px;
-    height: 17vh;
+    height: 100%;
     border-radius: 0.5vh;
     background: #ffffff;
     cursor: pointer;
@@ -688,6 +717,9 @@ input {
 .colum2 {
     flex: 1;
     padding: 0.5vh 1vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Ajusta si tienes imágenes más tarde */
@@ -732,8 +764,8 @@ h3 {
 
 }
 
-.divpice {
-    width: 100%;
+.divprice {
+    width: 90%;
     height: 7.5vh;
 }
 
@@ -757,11 +789,13 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 3px;
 }
 
 .insertcantidad {
-    width: 5vh;
-    height: 100%;
+    width: 7vh;
+    height: 80%;
+
 }
 
 .precio {
@@ -775,7 +809,7 @@ h4 {
 }
 
 .insertprecio {
-    width: 11vh;
+    width: 16vh;
     height: 4vh;
 }
 
@@ -1111,21 +1145,21 @@ h5 {
     grid-template-columns: 1fr 17fr;
 }
 
-
+/* 
 #uni {
     display: flex;
     align-items: center;
     border: none;
-    background-color: red;
+    background-color: black;
 
-}
+} */
 
-.botoneditaroeliminar {
+/* .botoneditaroeliminar {
     width: 40px;
     height: 40px;
-
+background-color: red;
     border-radius: 8px;
-}
+} */
 
 
 
@@ -1395,6 +1429,125 @@ h5 {
     background-color: #ccc !important;
     /* O un color más oscuro */
     opacity: 0.8;
+}
+
+
+
+
+
+/* ----------------------------------------stylos div de facturas --------------------------------- */
+.contenedor-recibos {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+}
+
+
+
+.titulo_encabezado {
+    background: linear-gradient(to bottom, #111, #1a1a1a);
+    color: #fff;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #F38221;
+    height: 10%;
+    width: 100%;
+
+}
+
+.contenedorpadre-encabezado {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.conetenedor_menu_lateral {
+    width: 20%;
+    height: 90%;
+    background: linear-gradient(to bottom, #111, #1a1a1a);
+    color: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.conetenedor_menu_lateral h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #F38221;
+    text-align: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.conetenedor_menu_lateral ul {
+    list-style: none;
+    padding: 0;
+}
+
+.conetenedor_menu_lateral ul li {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.conetenedor_menu_lateral ul li:hover,
+.conetenedor_menu_lateral ul li.activo {
+    background-color: #2d2d2d;
+    transform: scale(1.02);
+}
+
+.contenedor_facturas-resultados {
+    width: 100%;
+    height: 90%;
+    background-color: white;
+}
+
+
+/* -------------------------stylos de facturas---------------------------------- */
+.divdisplayfactura {
+    width: 90%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    height: 80vh;            /* Altura fija del contenedor visible */
+    overflow-y: scroll;      /* Permitir el desplazamiento solo vertical */
+    padding-right: 10px;
+    border: 1px solid #ccc;
+    position: relative;
+    
+    /* Para ocultar la barra de desplazamiento en Firefox */
+    scrollbar-width: none; 
+
+    /* Para ocultar la barra de desplazamiento en navegadores Webkit (Chrome, Safari) */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}
+/* Centrado del título principal */
+.centrado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Títulos internos fijos (pegajosos) */
+.divtituloagg.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #ccc;
+}
+
+* {
+    outline: 1px solid;
 }
 
 /*----------------------------------------tfoot----------------------------------*/

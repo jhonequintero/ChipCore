@@ -4,7 +4,7 @@ from sqlalchemy import func, cast, Integer
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import random
-
+from datetime import timedelta
 import os
 from num2words import num2words
 import re
@@ -148,6 +148,49 @@ def generar_hash(contrasena):
     return generate_password_hash(contrasena)
 
 
+# @app.route('/api/ventas/dia')
+# def obtener_ventas_dia():
+#     hoy = datetime.now(pytz.timezone("America/Bogota")).date()
+#     ventas = VentaCabecera.query.filter(VentaCabecera.fecha == hoy).all()
+#     return jsonify([venta_a_dict(v) for v in ventas])
+
+# @app.route('/api/ventas/semana')
+# def obtener_ventas_semana():
+#     hoy = datetime.now(pytz.timezone("America/Bogota")).date()
+#     inicio_semana = hoy - timedelta(days=hoy.weekday())  # Lunes
+#     fin_semana = inicio_semana + timedelta(days=6)        # Domingo
+#     ventas = VentaCabecera.query.filter(VentaCabecera.fecha.between(inicio_semana, fin_semana)).all()
+#     return jsonify([venta_a_dict(v) for v in ventas])
+
+# @app.route('/api/ventas/mes')
+# def obtener_ventas_mes():
+#     hoy = datetime.now(pytz.timezone("America/Bogota"))
+#     mes = hoy.month
+#     anio = hoy.year
+#     ventas = VentaCabecera.query.filter(
+#         func.extract('month', VentaCabecera.fecha) == mes,
+#         func.extract('year', VentaCabecera.fecha) == anio
+#     ).all()
+#     return jsonify([venta_a_dict(v) for v in ventas])
+
+# @app.route('/api/ventas/anual')
+# def obtener_ventas_anual():
+#     anio = datetime.now(pytz.timezone("America/Bogota")).year
+#     ventas = VentaCabecera.query.filter(
+#         func.extract('year', VentaCabecera.fecha) == anio
+#     ).all()
+#     return jsonify([venta_a_dict(v) for v in ventas])
+
+# # Función de utilidad para convertir la venta a diccionario
+# def venta_a_dict(v):
+#     return {
+#         'fecha': v.fecha.strftime('%Y-%m-%d'),
+#         'hora': v.hora.strftime('%H:%M:%S'),
+#         'folio': v.folio,
+#         'cliente': v.cliente.nombre_completo if v.cliente else '',
+#         'total': v.total,
+#         'vendedor': v.vendedor.nombre if v.vendedor else ''
+#     }
 def enviar_correo(destinatario, asunto, mensaje):
     try:
         msg = Message(asunto, recipients=[destinatario])
@@ -168,6 +211,7 @@ def verificar_correo_existente():
 
     usuario = Usuario.query.filter_by(correo=correo).first()
     return jsonify({'existe': bool(usuario)})
+
 @app.route("/enviar_codigo_verificacion", methods=["POST"])
 def enviar_codigo_verificacion():
     from random import randint
@@ -431,17 +475,7 @@ def panel_trabajador():
     return redirect(url_for('inicio'))
 
 
-@app.route('/usuario/<int:id_usuario>/cambiar_estado', methods=['POST'])
-def cambiar_estado_usuario(id_usuario):
-    if 'usuario' in session and session.get('tipo') == 'administrador':
-        usuario = Usuario.query.filter_by(id_usuario=id_usuario).first()
-        if not usuario:
-            return jsonify({'success': False, 'msg': 'Usuario no encontrado'}), 404
 
-        usuario.estado = not usuario.estado
-        db.session.commit()
-        return jsonify({'success': True, 'nuevo_estado': usuario.estado})
-    return jsonify({'success': False, 'msg': 'Acceso no autorizado'}), 403
 
 @app.route('/agregar_producto', methods=['POST'])
 def agregar_producto():
@@ -509,6 +543,64 @@ def ver_productos_trabajador():
         return render_template('panel_trabajador.html', datos=datos, vista='productos', productos=productos)
     return redirect(url_for('inicio'))
 
+@app.route('/api/productos', methods=['GET'])
+def api_productos():
+    if 'usuario' not in session:
+        return jsonify({"error": "No autorizado"}), 403
+
+    productos = Producto.query.order_by(Producto.id_producto.asc()).all()
+    resultado = [{
+        "id": p.id_producto,
+        "nombre": p.nombre_producto,
+        "descripcion": p.descripcion_producto,
+        "cantidad": p.cantidad_producto,
+        "precio": p.precio_producto
+    } for p in productos]
+
+    return jsonify(resultado)
+
+@app.route('/api/usuarios')
+def api_usuarios():
+    if 'usuario' not in session or session.get('tipo') != 'administrador':
+        return jsonify([])  # Devuelve lista vacía si no está autorizado
+
+    empleados = Empleado.query.all()
+    lista = []
+    for e in empleados:
+        lista.append({
+            "id": e.id_usuario,
+            "nombre": e.nombre,
+            "apellido": e.apellido,
+            "correo": e.correo,
+            "codigo_empleado": e.codigo_empleado,
+            "cedula": e.id_usuario,  # Puede usar id_usuario como cédula
+            "rol": e.rol,
+            "estado": e.estado_empleado
+        })
+    return jsonify(lista)
+
+@app.route('/cambiar_estado_usuario/<int:id>', methods=['POST'])
+def cambiar_estado_usuario(id):
+    if 'usuario' not in session or session.get('tipo') != 'administrador':
+        return jsonify({"success": False, "error": "No autorizado"}), 403
+
+    try:
+        usuario = db.session.query(Usuario).filter_by(id_usuario=id).first()
+        if usuario:
+            usuario.estado = not usuario.estado
+            db.session.commit()
+
+            estado_texto = "activado" if usuario.estado else "desactivado"
+            return jsonify({
+                "success": True,
+                "mensaje": f"✅ Usuario {estado_texto} correctamente",
+                "nuevo_estado": usuario.estado
+            })
+
+        return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+    except Exception as e:
+        print(f"Error cambiando estado: {e}")
+        return jsonify({"success": False, "error": "Error del servidor"}), 500
 
 @app.route('/actualizar_producto', methods=['POST'])
 def actualizar_producto():
@@ -534,6 +626,7 @@ def actualizar_producto():
             print(f"Error al actualizar producto: {e}")
             return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
     return jsonify({'success': False, 'error': 'Acceso no autorizado'}), 403
+
 
 
 @app.route('/verificar_producto', methods=['POST'])

@@ -1,3 +1,35 @@
+// --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---
+// ParticlesJS se ejecuta cuando toda la página y sus recursos están cargados.
+window.onload = function () {
+    particlesJS("particles-js", {
+        particles: {
+            number: {
+                value: 180,
+                density: { enable: true, value_area: 800 }
+            },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5 },
+            size: { value: 3, random: true },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.4,
+                width: 1
+            },
+            move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
+        },
+        interactivity: {
+            detect_on: "canvas",
+            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
+            modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
+        },
+        retina_detect: true
+    });
+};
+
+
 
 // Función para mostrar mensajes modales 
 function showMessageModal(message, type = 'info') {
@@ -47,17 +79,27 @@ function deslizarventana() {
 
 // Función para mostrar/ocultar secciones de contenido
 function Enseñarpag(id) {
-    document.querySelectorAll('.contenido').forEach(div => {
-        div.classList.add('oculto');
-    });
+    const secciones = document.querySelectorAll(".contenido");
+    secciones.forEach(s => s.classList.add("oculto"));
 
-    const seccion = document.getElementById(id);
-    if (seccion) {
-        seccion.classList.remove('oculto');
-    } else {
-        console.warn(`Enseñarpag: no existe el elemento con id="${id}"`);
+    const target = document.getElementById(id);
+    if (target) {
+        target.classList.remove("oculto");
+
+        if (id === "buscarproducto") {
+            cargarProductos();
+        }
+        if (id === "usuarios") {
+            cargarUsuarios();
+        }
+
+
+        if (id === "Recibos") {
+            cargarVentas();
+        }
     }
 }
+
 
 // Mostrar modal al hacer clic en cualquier botón de editar producto
 document.addEventListener("click", function (e) {
@@ -73,9 +115,84 @@ document.addEventListener("click", function (e) {
     document.getElementById("modal-editar").style.display = "flex";
 });
 
+
 function cerrarModal() {
     document.getElementById("modal-editar").style.display = "none";
 }
+
+
+
+// 🔁 Cargar todos los productos dinámicamente
+async function cargarProductos() {
+    try {
+        const contenedor = document.querySelector(".mostrarproductos");
+        if (!contenedor) return;
+
+        const res = await fetch("/api/productos");
+        const productos = await res.json();
+
+        contenedor.innerHTML = '';
+        if (productos.length === 0) {
+            contenedor.innerHTML += '<p>No hay productos registrados.</p>';
+            return;
+        }
+
+        productos.forEach(p => {
+            const agotado = p.cantidad > 0
+                ? p.cantidad
+                : `<span style="display:inline-block; height:89%; width:7vh; text-align: center; color: red; font-weight: bold;">None</span>`;
+            const productoHTML = `
+                <div class="divdivproducto">
+                    <div class="botoneditaroeliminar">
+                        <div class="botonx">
+                            <button class="buttonX btn-editar-producto"
+                                data-id="${p.id}"
+                                data-nombre="${p.nombre}"
+                                data-descripcion="${p.descripcion}"
+                                data-cantidad="${p.cantidad}"
+                                data-precio="${p.precio}">
+                                <img class="imgx" src="/static/img/tuerca.png" alt="Editar">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="divproducto">
+                        <div class="colum1">
+                            <h3>${p.nombre}</h3>
+                            <div class="divdescripcion">
+                                <h4>Descripción</h4>
+                                <div class="letradescripcion">${p.descripcion}</div>
+                            </div>
+                        </div>
+                        <div class="colum2">
+                            <div class="divid">
+                                <div class="id">
+                                    <h3>ID:</h3>
+                                    <div class="insertid">${p.id}</div>
+                                </div>
+                                <div class="cantidad">
+                                    <h3 style="">Cantidad:</h3>
+                                    <div style="margin-top: 1vh;" class="insertcantidad">${agotado}</div>
+                                </div>
+                            </div>
+                            <div class="divprice">
+                                <div class="precio">
+                                    <h4>Precio:</h4>
+                                    <div class="insertprecio">$${p.precio.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            contenedor.innerHTML += productoHTML;
+        });
+
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
+        showMessageModal("❌ No se pudieron cargar productos", "error");
+    }
+}
+
 document.getElementById("form-editar-producto").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -98,6 +215,12 @@ document.getElementById("form-editar-producto").addEventListener("submit", funct
                 cerrarModal();
                 form.reset();
                 showMessageModal("✅ Producto actualizado correctamente", "success");
+                // Solo recarga productos si estás viendo la sección de productos
+                const seccionProductos = document.getElementById("buscarproducto");
+                if (seccionProductos && !seccionProductos.classList.contains("oculto")) {
+                    cargarProductos();
+                }
+
             } else {
                 showMessageModal(data.error || "❌ No se pudo actualizar", "error");
             }
@@ -284,6 +407,138 @@ function filtrarUsuariosPorCedula() {
         mensaje.style.display = encontrados === 0 ? "block" : "none";
     }
 }
+async function cargarUsuarios() {
+    try {
+        const contenedor = document.getElementById("contenedor-usuarios");
+        if (!contenedor) return;
+
+        const res = await fetch("/api/usuarios");
+        const usuarios = await res.json();
+
+        contenedor.innerHTML = '';  // Limpia antes de renderizar
+
+        if (usuarios.length === 0) {
+            contenedor.innerHTML = '<p>No hay usuarios registrados.</p>';
+            return;
+        }
+
+        usuarios.forEach(u => {
+            const estadoTexto = u.estado ? "Activo" : "Inactivo";
+            const claseEstado = u.estado ? "activo" : "inactivo";
+            const textoBoton = u.estado ? "Desactivar" : "Activar";
+
+            const usuarioHTML = `
+                <div class="divdivuser">
+                        <div class="boton1">
+                            <button class="buttonEstado" onclick="cambiarEstadoUsuario(${u.id})">
+                                ${textoBoton}
+                            </button>
+                        </div>
+                    <div class="divuser">
+                        <div class="colum1" style="display: flex; justify-content: center; align-items: center;">
+                            <div class="genero">
+                                <img style="border: 1px ridge black;" class="Imggener" src="/static/img/mujer.png" alt="Imagen Usuario">
+                            </div>
+                        </div>
+                        <div class="colum2" style="display: flex; justify-content: center; align-items: center;">
+                            <div class="divnombreydatos">
+                                <div class="nombredato">
+                                    <h3>${u.nombre} ${u.apellido}</h3>
+                                </div>
+                                <div class="divdatos">
+                                    <div class="dato1 displaydatos">
+                                        <div class="caracter">
+                                            <h5>ID:</h5>
+                                        </div>
+                                        <div class="pedircaracter">${u.codigo_empleado}</div>
+                                    </div>
+                                    <div class="dato2 displaydatos">
+                                        <div class="caracter">
+                                            <h5>Correo:</h5>
+                                        </div>
+                                        <div class="pedircaracter">${u.correo}</div>
+                                    </div>
+                                    <div class="dato3 displaydatos">
+                                        <div class="caracter">
+                                            <h5>Cédula:</h5>
+                                        </div>
+                                        <div class="pedircaracter">${u.cedula}</div>
+                                    </div>
+                                    <div class="dato4 displaydatos">
+                                        <div class="caracter">
+                                            <h5>Rol:</h5>
+                                        </div>
+                                        <div class="pedircaracter">${u.rol}</div>
+                                    </div>
+                                    <div class="dato5 displaydatos estadoUsuario">
+                                        <div class="caracter">
+                                            <h5>Estado:</h5>
+                                        </div>
+                                        <div class="pedircaracter ${claseEstado}">
+                                            ${estadoTexto}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            contenedor.innerHTML += usuarioHTML;
+        });
+
+    } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        showMessageModal("❌ No se pudieron cargar usuarios", "error");
+    }
+}
+
+function cambiarEstadoUsuario(id) {
+    const boton = document.querySelector(`button[onclick="cambiarEstadoUsuario(${id})"]`);
+    if (!boton) return;
+
+    boton.disabled = true;           // ⛔ Desactiva el botón
+    const textoOriginal = boton.innerText;
+    boton.innerText = "Procesando...";
+
+    fetch(`/cambiar_estado_usuario/${id}`, {
+        method: "POST"
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showMessageModal(data.mensaje, "success");
+
+                const estadoTexto = document.getElementById(`estado-texto-${id}`);
+                if (estadoTexto) {
+                    if (data.nuevo_estado) {
+                        estadoTexto.textContent = "Activo";
+                        estadoTexto.classList.remove("inactivo");
+                        estadoTexto.classList.add("activo");
+                        boton.innerText = "Desactivar";
+                    } else {
+                        estadoTexto.textContent = "Inactivo";
+                        estadoTexto.classList.remove("activo");
+                        estadoTexto.classList.add("inactivo");
+                        boton.innerText = "Activar";
+                    }
+                }
+            } else {
+                showMessageModal(data.error || "❌ No se pudo cambiar el estado", "error");
+                boton.innerText = textoOriginal;
+            }
+        })
+        .catch(err => {
+            console.error("Error al cambiar estado:", err);
+            showMessageModal("❌ Error del servidor", "error");
+            boton.innerText = textoOriginal;
+        })
+        .finally(() => {
+            boton.disabled = false;  // ✅ Reactiva el botón al finalizar
+        });
+}
+
+
 
 // --- Funciones relacionadas con ventas y usuarios ---
 
@@ -348,46 +603,13 @@ async function cargarVentas() {
     }
 }
 
-async function cambiarEstadoUsuario(id_usuario) {
-    try {
-        const response = await fetch(`/usuario/${id_usuario}/cambiar_estado`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
 
-        const data = await response.json();
-
-        if (data.success) {
-            const btn = document.querySelector(`button.buttonEstado[onclick="cambiarEstadoUsuario(${id_usuario})"]`);
-            if (btn) {
-                btn.textContent = data.nuevo_estado ? 'Desactivar' : 'Activar';
-            }
-
-            // Actualizar texto visual del estado
-            const contenedorEstado = document.querySelector(`#estado-${id_usuario} .pedircaracter`);
-            if (contenedorEstado) {
-                contenedorEstado.textContent = data.nuevo_estado ? 'Activo' : 'Inactivo';
-            }
-
-            // Mostrar modal con mensaje
-            showMessageModal(`✅ Usuario ${data.nuevo_estado ? 'activado' : 'desactivado'} correctamente.`, 'success');
-
-        } else {
-            showMessageModal('Error: ' + (data.msg || 'No se pudo cambiar el estado'), 'error');
-        }
-    } catch (error) {
-        showMessageModal('❌ Error en la petición: ' + error.message, 'error');
-    }
-}
 
 
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    Enseñarpag('divperfil');
+    Enseñarpag('Recibos');
 
     const btnDeslizar = document.querySelector('button');
     if (btnDeslizar) {
@@ -414,6 +636,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     showMessageModal(data.mensaje, 'success');
                     form.reset();
+                    cargarUsuarios();
+
 
                     // OPCIONAL: Agrega el nuevo empleado a una tabla si existe
                     const tabla = document.getElementById("tabla-empleados");
@@ -464,6 +688,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     showMessageModal(data.mensaje, 'success');
                     form.reset();
 
+                    // 🔄 Recarga todos los productos dinámicamente
+                    cargarProductos();
+
+                    // Si deseas seguir usando la tabla, puedes mantener esto o eliminarlo
                     const tabla = document.getElementById("tabla-productos");
                     if (tabla && data.producto) {
                         const fila = document.createElement("tr");
@@ -658,48 +886,35 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("correo").value = "";
             document.getElementById("cedula").value = "";
 
+            // ✅ NUEVO BLOQUE: refrescar productos si estás viendo la sección de productos
+            const seccionProductos = document.getElementById("buscarproducto");
+            if (seccionProductos && !seccionProductos.classList.contains("oculto")) {
+                await cargarProductos();
+
+                // ✅ Si el buscador tiene texto, aplica el filtro otra vez
+                const buscador = document.getElementById("buscador");
+                if (buscador && buscador.value.trim() !== "") {
+                    filtrarProductos();
+                }
+            }
+
+            // ✅ NUEVO BLOQUE: refrescar ventas si estás en "Recibos"
+            const seccionRecibos = document.getElementById("Recibos");
+            if (seccionRecibos && !seccionRecibos.classList.contains("oculto")) {
+                await cargarVentas();
+            }
+
         } catch (err) {
             console.error("Error:", err);
             showMessageModal("❌ Hubo un problema al guardar la compra.", "error");
-        } finally {
+        }
+        finally {
             boton.disabled = false;
             boton.innerText = "Finalizar compra";
         }
     });
 
 });
-
-// --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---
-// ParticlesJS se ejecuta cuando toda la página y sus recursos están cargados.
-window.onload = function () {
-    particlesJS("particles-js", {
-        particles: {
-            number: {
-                value: 180,
-                density: { enable: true, value_area: 800 }
-            },
-            color: { value: "#ffffff" },
-            shape: { type: "circle" },
-            opacity: { value: 0.5 },
-            size: { value: 3, random: true },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: "#ffffff",
-                opacity: 0.4,
-                width: 1
-            },
-            move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
-        },
-        interactivity: {
-            detect_on: "canvas",
-            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
-            modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
-        },
-        retina_detect: true
-    });
-};
-
 
 
 // Mostrar y cerrar el modal
@@ -754,3 +969,82 @@ document.getElementById("formActualizarPerfil").addEventListener("submit", async
 });
 
 
+// function mostrarSeccion(id_seccion) {
+//     document.querySelectorAll('.seccion_ventas').forEach(seccion => {
+//         seccion.classList.add('oculto');
+//         seccion.classList.remove('visible');
+//     });
+
+//     const seccion = document.getElementById(id_seccion);
+//     if (seccion) {
+//         seccion.classList.remove('oculto');
+//         seccion.classList.add('visible');
+
+//         // Cargar datos si está vacío
+//         if (!seccion.dataset.cargado) {
+//             let tipo = id_seccion.replace('seccion-', '');
+//             fetch(`/api/ventas/${tipo}`)
+//                 .then(resp => resp.json())
+//                 .then(data => {
+//                     const contenedorLista = document.getElementById(`listado-${tipo}`);
+//                     const canvas = document.getElementById(`grafico-${tipo}`);
+//                     let ctx = canvas.getContext('2d');
+
+//                     if (data.length === 0) {
+//                         contenedorLista.innerHTML = "<p>Sin ventas registradas.</p>";
+//                         return;
+//                     }
+
+//                     // Mostrar lista simple
+//                     let html = "<ul>";
+//                     let etiquetas = [];
+//                     let totales = [];
+
+//                     data.forEach(v => {
+//                         etiquetas.push(v.fecha);
+//                         totales.push(v.total);
+//                         html += `<li><strong>${v.fecha}</strong> - ${v.cliente} - $${v.total}</li>`;
+//                     });
+//                     html += "</ul>";
+//                     contenedorLista.innerHTML = html;
+
+//                     // Crear gráfica
+//                     new Chart(ctx, {
+//                         type: 'bar',
+//                         data: {
+//                             labels: etiquetas,
+//                             datasets: [{
+//                                 label: 'Total vendido',
+//                                 data: totales,
+//                                 backgroundColor: 'rgba(54, 162, 235, 0.6)',
+//                                 borderColor: 'rgba(54, 162, 235, 1)',
+//                                 borderWidth: 1
+//                             }]
+//                         },
+//                         options: {
+//                             responsive: true,
+//                             plugins: {
+//                                 legend: { position: 'top' },
+//                                 title: { display: true, text: `Ventas (${tipo.toUpperCase()})` }
+//                             },
+//                             scales: {
+//                                 y: {
+//                                     beginAtZero: true,
+//                                     ticks: {
+//                                         callback: value => '$' + value.toLocaleString()
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     });
+
+//                     seccion.dataset.cargado = "true";
+//                 })
+//                 .catch(error => {
+//                     seccion.innerHTML = "<p>Error al cargar datos.</p>";
+//                     console.error(error);
+//                 });
+
+//         }
+//     }
+// }
