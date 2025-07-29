@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,101 +11,148 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
             background-color: #f4f4f4;
-            /* Añade text-align: center para centrar el contenido a nivel de bloque en clientes de correo antiguos */
             text-align: center; 
+            
         }
-
+        *{
+            
+            font-family: "Comfortaa", sans-serif;
+            font-optical-sizing: auto;
+        }
+        p{
+            color: white;
+            
+        }
+        
         .contenedor-email {
             width: 600px;
-            background-color: #fff;
+            background-color: #000000;
+            margin-top: 40px;
             padding: 30px;
-            border-top: 5px solid #000080;
-            border-bottom: 5px solid #000080;
+            /*border-top: 5px solid rgb(243, 130, 33);*/
+            /*border-bottom: 5px solid rgb(243, 130, 33);*/
+            border-left: 5px solid rgb(243, 130, 33);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             line-height: 1.5;
             color: #333;
             /* Centra el contenedor principal */
+            justify-content: center;
+            align-items: center;
+            
             margin: 0 auto; 
         }
+        .contenedor-email .descargarpdf{
+            width: 40%;
+            height: 25vh;
+            background: #111111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto; 
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(100, 100, 100, 0.3);
+        }    
+        .divNombreRecibo {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        background: #111111;
+        align-items: center;
+        border-left: 5px solid rgb(243, 130, 33);
+        
+        }
+        .imglogo{
+            width: 600px;
+            height: 13vh;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
 
+
+        }
+        .imagenlogo{
+            max-width: 40%;
+            height: 60%;
+            display: block;
+            margin: 0 auto; 
+        }
         .linea-superior,
         .linea-inferior {
             width: 80%;
             height: 2px;
-            background-color: #000080;
+            background: linear-gradient(to right, transparent, rgb(243, 130, 33), transparent);           
             margin: 20px auto;
         }
 
         .saludo {
-            margin-bottom: 25px;
+            
             font-size: 1.1em;
+            margin-right: 3vh;
+            
         }
 
         .nombre-cliente {
-            background-color: #e0e0e0;
-            padding: 10px 0;
-            margin-bottom: 20px;
+            background: #111111;
             font-weight: bold;
-            font-size: 1.2em;
+            height: 4.5vh;
+            font-size: 1.1em;
+            
+            
+            
+
         }
 
         .mensaje-factura {
-            margin-bottom: 20px;
-            font-size: 1em;
+            
+            font-size: 0.8em;
         }
 
         .numero-factura {
-            background-color: #e0e0e0;
+            background: #111111;
             padding: 10px 0;
             margin-bottom: 20px;
             font-weight: bold;
             font-size: 1.3em;
+            
         }
 
         .valor-total {
-            background-color: #e0e0e0;
+            background: #111111;
             padding: 10px 0;
             margin-bottom: 30px;
             font-weight: bold;
             font-size: 1.4em;
         }
 
-        .boton-ver-factura {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            transition: background-color 0.3s ease;
-        }
-
-        .boton-ver-factura:hover {
-            background-color: #0056b3;
-        }
-
         .nota-xml-pdf {
             font-size: 0.9em;
             margin-bottom: 20px;
+            color: #b2b2b2;
+            
         }
 
         .inconsistencia-contacto {
             font-size: 0.9em;
             margin-bottom: 20px;
+            color: #555;
         }
-
+        .descargarpdf{
+            width: 30%;
+            height: 5vh;
+            background: #111111;
+        }
         .inconsistencia-contacto strong {
-            color: #000080;
+            color:rgb(244, 128, 28);
         }
 
         .validacion-siesa {
             font-size: 0.9em;
             margin-bottom: 25px;
+            color: #b2b2b2;
         }
 
         .validacion-siesa a {
@@ -134,13 +183,13 @@
         }
 
         .firma-siesa strong {
-            color: #333;
+            color: #606060;
         }
 
         .email-automatico {
             font-weight: bold;
-            text-decoration: underline;
-            color: #333;
+            
+            color: #b2b2b2;
         }
 
         .no-responder {
@@ -148,30 +197,43 @@
             color: #dc3545;
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bokor&family=Bungee+Spice&family=Cinzel:wght@400..900&family=Comfortaa:wght@300..700&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Oswald:wght@200..700&family=Parkinsans:wght@300..800&family=Varela+Round&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <div class="contenedor-email">
+        <div class="imglogo">
+            <img src="https://i.postimg.cc/dQxJpw9t/Captura-de-pantalla-2025-04-03-081700-removebg-preview.png"  alt="" class="imagenlogo"> 
+        </div>
         <div class="linea-superior"></div>
 
-        <p class="saludo">Estimado cliente</p>
-        <div class="nombre-cliente">
-            <p> {{ venta_info['nombre_cliente'] }}</p>
+        <div style="flex-direction: row;" class="divNombreRecibo">
+            <p class="saludo">Estimado cliente :</p>
+            <div class="nombre-cliente">
+                <p style="margin: 0;" > {{ venta_info['nombre_cliente'] }}</p>
+            </div>
+        </div>
+        <div style=" height: 20vh; flex-direction: column; align-items: center; " class="divNombreRecibo">
+            <p style="font-size: 2.5vh;" class="saludo">MicroChip informa la emisión de la Factura Nº  :</p>
+      
+            <div class="nombre-cliente">
+                <p style="margin: 0;"> {{ venta_info['folio'] }}</p>
+            </div>
+                
+        </div>
+        
+
+        
+        <div style="margin-top: 5vh; border-left: 5px solid rgb(243, 130, 33);" class="valor-total">
+            <p class="mensaje-factura">Valor total</p>
+            <p class="mensaje-factura"> {{ venta_info['total'] }}</p>
         </div>
 
-        <p class="mensaje-factura">MicroChip S.A.S informa que se ha emitido la siguiente Factura Nº:</p>
-        <div class="numero-factura">
-            <p> {{ venta_info['folio'] }}</p>
-        </div>
-
-        <p class="mensaje-factura">Valor total</p>
-        <div class="valor-total">
-            <p> {{ venta_info['total'] }}</p>
-        </div>
-
-        <a href="#" class="boton-ver-factura">Ver factura</a>
 
         <div class="linea-inferior"></div>
+        <p  class="nota-xml-pdf">Descarga el PDF de la Factura :</p>
+        <div class="descargarpdf"></div>
 
         <p class="nota-xml-pdf">El archivo comprimido que usted está recibiendo se conforma por un XML firmado y un PDF
             correspondiente al documento electrónico emitido.</p>
