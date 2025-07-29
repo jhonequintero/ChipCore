@@ -515,50 +515,73 @@ input {
 
 
 /* ---------------------------------modal de actualizar datos perfil-------------------------------- */
-.modalactualizar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+.estilo-producto {
+    background-color: #fff;
+    border: 2px solid #444;
+    border-radius: 5px;
+    padding: 20px;
+    width: 400px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
 }
 
-.modal-contenido {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-    margin-top: 6vh;
-    background: white;
-    padding: 2vh 3vh;
-    border-radius: 1vh;
-    width: 35vh;
-    height: 44em;
-    text-align: left;
-    position: relative;
+.titulo-seccion {
+    font-weight: bold;
+    background-color: #333;
+    color: white;
+    padding: 8px;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
-#formActualizarPerfil {
+.grupo-form {
+    margin-bottom: 12px;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-    margin-top: 6vh;
-
 }
 
-.cerrar {
-    position: absolute;
-    top: 1vh;
-    right: 1vh;
-    font-size: 2vh;
+.grupo-form label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 3px;
+}
+
+.grupo-form input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.texto-estatico {
+    font-weight: bold;
+    color: #555;
+    margin-top: 5px;
+}
+
+.botones {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.btn-guardar, .btn-cancelar {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 3px;
     cursor: pointer;
 }
+
+.btn-guardar {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-cancelar {
+    background-color: #f44336;
+    color: white;
+}
+
 
 /*------------------------------- pagina buscar producto de admin------------------------*/
 
@@ -1140,7 +1163,7 @@ h5 {
     margin-left: 2vh;
     margin-right: 2vh;
     margin-top: 6vh;
-    height: 9vh;
+    height: 12vh;
     display: grid;
     grid-template-columns: 1fr 17fr;
 }
@@ -1267,38 +1290,90 @@ background-color: red;
 }
 
 /*----------------------------------------Ventana emergente actualizar datos----------------------------------*/
+/* Modal: fondo oscuro */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 
+/* Contenedor del contenido del modal */
 .modal-contenido {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    position: relative;
-    width: 400px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  background-color: white;
+  padding: 20px 25px;
+  border-radius: 10px;
+  width: 380px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  position: relative;
 }
 
+/* Botón de cerrar */
 .cerrar {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #333;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
 }
+
+/* Encabezado */
+.modal-contenido h2 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 22px;
+  color: #333;
+}
+
+/* Etiquetas y campos */
+#form-editar-producto label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+  color: #444;
+}
+
+#form-editar-producto input,
+#form-editar-producto textarea {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Botones */
+#form-editar-producto button[type="submit"],
+#form-editar-producto button[type="button"] {
+  margin-top: 15px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Botón guardar */
+#form-editar-producto button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+  margin-right: 10px;
+}
+
+/* Botón cancelar */
+#form-editar-producto button[type="button"] {
+  background-color: #db880b;
+  color: white;
+}
+
 
 /* ------------------------estado usuario-------------------- */
 .pedircaracter.activo {

@@ -425,7 +425,7 @@ async function cargarUsuarios() {
         usuarios.forEach(u => {
             const estadoTexto = u.estado ? "Activo" : "Inactivo";
             const claseEstado = u.estado ? "activo" : "inactivo";
-            const textoBoton = u.estado ? "Desactivar" : "Activar";
+            const textoBoton = u.estado ? "Off" : "On";
 
             const usuarioHTML = `
                 <div class="divdivuser">
