@@ -1517,7 +1517,7 @@ background-color: red;
     flex-direction: column;
     align-items: center;
     
-    height: 80vh;            /* Altura fija del contenedor visible */
+    max-height: 75vh;           /* Altura fija del contenedor visible */
     overflow-y: scroll;      /* Permitir el desplazamiento solo vertical */
     padding-right: 10px;
     border: 1px solid #ccc;
@@ -1533,22 +1533,95 @@ background-color: red;
 }
 /* Centrado del título principal */
 .centrado {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Títulos internos fijos (pegajosos) */
 .divtituloagg.sticky {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 1px solid #ccc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #ccc;
+    width: 90%;
+}
+.divfacturas{
+    width: 90%;
+    
+    outline: 1px solid;
+    
+}
+.mes {
+    background-color: #333;
+    color: black;
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 1px solid #444;
+    width: 92.5%;
 }
 
-* {
+.contenido-mes, .contenido-factura {
+    display: none;
+    background-color: #f9f9f9;
+    padding: 5px 15px;
+    border-bottom: 1px solid #ddd;
+    width: 91%;
+    margin-bottom: 3vh;
+    
+}
+
+.factura {
+    background: #eee;
+    padding: 8px;
+    margin-bottom: 5vh;
+    
+    font-size: 14px;
+    width: 100%;
+}
+
+/* Para mostrar el contenido si el mes está abierto */
+.mes.abierto + .contenido-mes {
+    display: block;
+}
+.factura.abierto + .contenido-factura {
+    display: block;
+}
+
+/* Estilos para visual */
+.mes,
+.factura {
+    cursor: pointer;
+    padding: 2px;
+    background-color: #eee;
+    margin: 5px;
+}
+
+.recibo {
+    background: #f8f8f8;
+    padding: 10px;
+    border-left: 3px solid #F38221;
+    margin: 5px 0 10px 10px;
+    border-radius: 4px;
+    overflow-y: auto;
+    width: 90%;
+}
+.producto {
+    background-color: #fff;
+    padding: 6px 10px;
+    margin-bottom: 2vh;
+    border-left: 2px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.producto:hover {
+    background: #bebebe;
+}
+*{
     outline: 1px solid;
 }
+
 
 /*----------------------------------------tfoot----------------------------------*/
 /* .tfoot {

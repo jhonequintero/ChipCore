@@ -967,7 +967,22 @@ document.getElementById("formActualizarPerfil").addEventListener("submit", async
         boton.innerText = "Guardar cambios";
     }
 });
-
+/*--------------------desplegables facturas --------------------*/
+const meses = document.querySelectorAll('.mes');
+meses.forEach(mes => {
+    mes.addEventListener('click', () => {
+        meses.forEach(m => {
+            if (m !== mes) m.classList.remove('abierto');
+        });
+        mes.classList.toggle('abierto');
+    });
+});
+const facturas = document.querySelectorAll('.factura');
+facturas.forEach(factura => {
+    factura.addEventListener('click', () => {
+        factura.classList.toggle('abierto');
+    });
+});
 
 // function mostrarSeccion(id_seccion) {
 //     document.querySelectorAll('.seccion_ventas').forEach(seccion => {
