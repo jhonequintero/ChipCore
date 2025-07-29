@@ -148,49 +148,6 @@ def generar_hash(contrasena):
     return generate_password_hash(contrasena)
 
 
-# @app.route('/api/ventas/dia')
-# def obtener_ventas_dia():
-#     hoy = datetime.now(pytz.timezone("America/Bogota")).date()
-#     ventas = VentaCabecera.query.filter(VentaCabecera.fecha == hoy).all()
-#     return jsonify([venta_a_dict(v) for v in ventas])
-
-# @app.route('/api/ventas/semana')
-# def obtener_ventas_semana():
-#     hoy = datetime.now(pytz.timezone("America/Bogota")).date()
-#     inicio_semana = hoy - timedelta(days=hoy.weekday())  # Lunes
-#     fin_semana = inicio_semana + timedelta(days=6)        # Domingo
-#     ventas = VentaCabecera.query.filter(VentaCabecera.fecha.between(inicio_semana, fin_semana)).all()
-#     return jsonify([venta_a_dict(v) for v in ventas])
-
-# @app.route('/api/ventas/mes')
-# def obtener_ventas_mes():
-#     hoy = datetime.now(pytz.timezone("America/Bogota"))
-#     mes = hoy.month
-#     anio = hoy.year
-#     ventas = VentaCabecera.query.filter(
-#         func.extract('month', VentaCabecera.fecha) == mes,
-#         func.extract('year', VentaCabecera.fecha) == anio
-#     ).all()
-#     return jsonify([venta_a_dict(v) for v in ventas])
-
-# @app.route('/api/ventas/anual')
-# def obtener_ventas_anual():
-#     anio = datetime.now(pytz.timezone("America/Bogota")).year
-#     ventas = VentaCabecera.query.filter(
-#         func.extract('year', VentaCabecera.fecha) == anio
-#     ).all()
-#     return jsonify([venta_a_dict(v) for v in ventas])
-
-# # Función de utilidad para convertir la venta a diccionario
-# def venta_a_dict(v):
-#     return {
-#         'fecha': v.fecha.strftime('%Y-%m-%d'),
-#         'hora': v.hora.strftime('%H:%M:%S'),
-#         'folio': v.folio,
-#         'cliente': v.cliente.nombre_completo if v.cliente else '',
-#         'total': v.total,
-#         'vendedor': v.vendedor.nombre if v.vendedor else ''
-#     }
 def enviar_correo(destinatario, asunto, mensaje):
     try:
         msg = Message(asunto, recipients=[destinatario])
