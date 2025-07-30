@@ -609,7 +609,7 @@ async function cargarVentas() {
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    Enseñarpag('Recibos');
+    Enseñarpag('divperfil');
 
     const btnDeslizar = document.querySelector('button');
     if (btnDeslizar) {

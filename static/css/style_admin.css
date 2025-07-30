@@ -1765,9 +1765,9 @@ background-color: red;
 .producto:hover {
     background: #bebebe;
 }
-*{
+/* *{
     outline: 1px solid;
-}
+} */
 
 
 /*----------------------------------------tfoot----------------------------------*/
