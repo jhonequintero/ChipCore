@@ -229,6 +229,8 @@ def cambiar_contrasena():
     else:
         return jsonify({"success": True, "redirect": url_for("panel_trabajador")})
 
+
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.is_json:

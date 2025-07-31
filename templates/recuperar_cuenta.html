@@ -347,6 +347,7 @@
     <div class="contenedor_principal">
         <div class="contenedor_encabezado">
             <div class="contenedor_img">
+                
                 <img id="imagen_1"  src="{{ url_for('static', filename='img/logo_2.png') }}" alt="imagen">
             </div>
             <form id="formLoginHeader" class="contenedor_inicio-secion">
@@ -406,7 +407,7 @@
                         </div>
                     </div>
                     <div style="margin-top: 0.4em" class="linea_cont_3">
-                         <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
+                         <button id="btn-volver-correo" class="boton_modal cancelar">Atrás</button>
                         <button id="btn-verificar" class="boton_modal">Verificar</button>
                     </div>
                 </div>
@@ -422,24 +423,23 @@
                              signos de puntuación.
                         </p>
                         <div style="position: relative; margin-top: 1em; width: 100%;" class="div-centro">
-    <input
-        style="margin-bottom: 1em; margin-left:1em; width: 95%; padding-right: 2.5em;"
-        type="password"
-        id="nuevaContrasena"
-        placeholder="Nueva contraseña"
-    >
-    <button
-        type="button"
-        id="togglePassword"
-        style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0;"
-    >
-        <span id="iconEye">&#128065;</span>
-    </button>
-</div>
+                        <input
+                            style="margin-bottom: 1em; margin-left:1em; width: 95%; padding-right: 2.5em;"
+                            type="password"
+                            id="nuevaContrasena"
+                            placeholder="Nueva contraseña"
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0;"
+                        >
+                             <i id="iconEye" class="fa-solid fa-eye-slash"></i>
+                        </button>
+                    </div>
                     </div>
                     
                     <div class="linea_cont_3">
-                        <button id="btn-volver-buscar" class="boton_modal cancelar">Atrás</button>
                         <button id="btn-guardar" class="boton_modal">Guardar contraseña</button>
                     </div>
                     

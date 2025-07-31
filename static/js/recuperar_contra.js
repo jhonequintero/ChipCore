@@ -32,11 +32,7 @@ window.onload = function () {
     });
 };
 // ...código existente...
-
 document.addEventListener("DOMContentLoaded", function () {
-    // ...código existente...
-
-    // Mostrar/ocultar contraseña con ojito tachado/destachado usando FontAwesome
     const inputPass = document.getElementById("nuevaContrasena");
     const iconoOjo = document.getElementById("iconEye");
     const toggleBtn = document.getElementById("togglePassword");
@@ -54,9 +50,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-    // ...código existente...
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     let correoTemporal = "";
 
@@ -241,6 +236,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Botones volver
     document.getElementById("btn-volver-buscar").addEventListener("click", () => {
         mostrarPaso("paso-buscar");
+    });
+    document.getElementById("btn-volver-correo").addEventListener("click", () => {
+        mostrarPaso("paso-enviar");
     });
 
     document.getElementById("btn-cancelar-buscar").addEventListener("click", () => {

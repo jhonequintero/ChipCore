@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Trabajador</title>
+    <title>Panel Administrador</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,13 @@
                             </div>
                         </button>
                     </div>
-                   
+                    <!--<div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('divaggproducts')">
+                            <img src="{{ url_for('static', filename='img/aggproducs.png') }}" alt="Agregar Productos" class="buscarboton">
+                            <span class="text">Agregar Productos</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>-->
                     <div class="botonesventana">
                         <button class="botonwindow" onclick="Enseñarpag('buscarproducto')">
                             <img src="{{ url_for('static', filename='img/buscarproductos.png') }}" alt="Buscar Productos" class="buscarboton">
@@ -41,7 +47,20 @@
                             <div class="lineanimada"></div>
                         </button>
                     </div>
-                   
+                    <!-- <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('agregaruser')">
+                            <img src="{{ url_for('static', filename='img/agguser.png') }}" alt="Agregar Usuarios" class="buscarboton">
+                            <span class="text">Agregar Usuarios</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>
+                    <div class="botonesventana">
+                        <button class="botonwindow" onclick="Enseñarpag('actualizarstock')">
+                            <img src="{{ url_for('static', filename='img/updateproducts.png') }}" alt="Mostrar Usuarios" class="buscarboton">
+                            <span class="text">Mostrar Usuarios</span>
+                            <div class="lineanimada"></div>
+                        </button>
+                    </div>-->
                     <div class="botonesventana">
                         <button class="botonwindow" onclick="Enseñarpag('Recibos')">
                             <img src="{{ url_for('static', filename='img/iconrecibo.png') }}" alt="Facturas" class="buscarboton">
@@ -89,19 +108,80 @@
                                      <div class="campo">
                                         <span class="label">Código User:</span>
                                         <span class="valor">{{ datos.codigo_empleado }}</span>
-                                    </div>-
+                                    </div>
                                 </div>
                             </div>
                             
                         </div>
-                        <div style="" class="divboton "> 
+                        <div style="" class="divboton ">  <!--  <button type="button" class="botonsito" onclick="abrirModalActualizarPerfil()">Actualizar perfil</button> -->
                                 <button onclick="window.location.href='{{ url_for('inicio') }}'" class="botonsito">Cerrar sesión</button>
                             </div>
-                       
+                        <!-- Modal Actualizar Perfil intento  -->
+<div id="modalActualizarPerfil" class="modalactualizar" style="display: none;">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarModalActualizarPerfil()">&times;</span>
+        <h2>Actualizar Perfil</h2>
+        <form id="formActualizarPerfil">
+            <label>Cédula:</label>
+            <span style="font-weight: bold;">{{ datos.id }}</span>
+            <input type="hidden" name="id_usuario" value="{{ datos.id }}">
+
+            <label>Nombre</label>
+            <input type="text" name="nombre" id="nuevo_nombre" value="{{ datos.nombre }}" required>
+
+            <label>Apellidos</label>
+            <input type="text" name="apellido" id="nuevo_apellido" value="{{ datos.apellido }}" required>
+
+            <label>Correo</label>
+            <input type="email" name="correo" id="nuevo_correo" value="{{ datos.correo }}" required>
+
+            <label>Contraseña actual</label>
+            <input type="password" name="contrasena_actual" required>
+
+            <label>Nueva contraseña</label>
+            <input type="password" name="nueva_contrasena">
+
+            <button type="submit">Guardar cambios</button>
+        </form>
+    </div>
+</div>
 
                     </div>
                 </div>
-                
+                <div class="sesioncontent flex1 contenido oculto" id="divaggproducts">
+                    <div class="divtituloagg">
+                        <h6 style="margin-left: 2vh;">Agregar Producto.</h1>
+                    </div>
+                    <!-- <form class="formularioagg" action="/agregar_producto" method="POST"> -->
+                    
+                    <form class="formularioagg" id="form-producto">
+                        <div class="divformularioagg">
+                            <div class="preguntas">
+                                <div class="preguntardatos">
+                                    <div class="pregunta">
+                                        <label for="nombre">-1. Ingrese el nombre del producto</label>
+                                        <input type="text" id="nombre" name="nombre_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="precio">-2. Ingrese el precio:</label>
+                                        <input type="number" id="precio" name="precio_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="cantidad">-3. Ingrese la cantidad del producto </label>
+                                        <input type="number" id="cantidad" name="cantidad_producto" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="descripcion">-4. Ingrese una descripción breve del producto</label>
+                                        <textarea id="descripcion" name="descripcion_producto" rows="5" cols="40" placeholder="Escribe una descripción..." required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divbotonaggproducto">
+                                <button style="height: 4.5vh; width: 25vh; margin-bottom: 10vh;" class="botonsito" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">
                     <div class="divtituloagg">
                         <h6 style="margin: 2vh;">Agregar Producto.</h6>
@@ -124,7 +204,7 @@
                     <div class="divtituloagg">
                         <h6 style="margin: 2vh;">Productos.</h6>
                     </div>
-                    <div class="divmostrarproductos">
+                    <div class="divmostrarproductos" >
                         <div style="border: 2px ridge; border-bottom: none" class="divtituloagg">
                             <h6 style="margin: 2vh;">Productos Registrados.</h6>
                         </div>
@@ -134,9 +214,9 @@
                                 No se encontraron productos con esas iniciales.
                             </p>
                             {% if productos %}
-                                {% for p in productos %}
-                                    <div class="divdivproducto" > <!--  id="uni" -->
-                                          
+                                {% for p in productos %} <!--   for p in productos[-6:]  usarlo asi para cuando los inpust este muy lentos en la seccion de producto-->
+                                    <div class="divdivproducto" >
+                                           
                                        
                                         <div class="divproducto">
                                             <div class="colum1">
@@ -158,7 +238,7 @@
                                                             {% if p.cantidad_producto > 0 %}
                                                                 {{ p.cantidad_producto }}
                                                             {% else %}
-                                                                <span>AGOTADO</span>
+                                                                <span>variable</span>
                                                             {% endif %}
                                                         </div>
 
@@ -167,7 +247,8 @@
                                                 <div class="divprice">
                                                     <div class="precio">
                                                         <h4>Precio:</h4>
-                                                        <div class="insertprecio">${{ "%.2f"|format(p.precio_producto) }}</div>
+                                                       <div class="insertprecio">${{ "{:,.2f}".format(p.precio_producto).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -178,8 +259,34 @@
                                 <p>No hay productos registrados.</p>
                             {% endif %}
                         </div>
+            <div id="modal-editar" style="display:none;" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal()">&times;</span>
+                    <h2>Editar Producto</h2>                      
+                    <form id="form-editar-producto">
 
-</div>
+                        <input type="hidden" name="id_producto" id="modal_id">
+
+                        <label>Nombre:</label>
+                        <input type="text" name="nombre_producto" id="modal_nombre"><br>
+
+                        <label>Descripción:</label>
+                        <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
+
+                        <label>Cantidad:</label>
+                        <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
+
+                        <label>Precio:</label>
+                        <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
+
+                        <button type="submit">Guardar cambios</button>
+                        
+                        <button type="button" onclick="cerrarModal()">Cancelar</button>
+                    </form>
+
+                    </div>
+                </div>
+            </div>
                     <div class="compraproductos">
                         <h2>Productos a comprar</h2>
                         <div class="divpedirdatosclient">
@@ -214,11 +321,11 @@
                                         <div class="addid">
                                             <h5 style="margin-bottom: 1vh;">ID</h5>
                                             <div class="entradadeid">
-                                                <input class="entradaid" type="number" placeholder="ID del producto">
+                                                <input class="entradaid" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="ID del producto" autocomplete="off">
                                             </div>
                                             <h5 style="margin-top: 1.5vh;">Cantidad</h5>
                                             <div class="entradadeid">
-                                                <input class="entradaid" type="number" placeholder="Cantidad a agregar">
+                                                <input class="entradaid" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="Cantidad a agregar" autocomplete="off">
                                             </div>
                                             <button class="botonaddid">Agregar</button>
                                         </div>
@@ -229,38 +336,177 @@
                         </div>
                     </div>
                 </div>
+                <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="actualizarstock">
+                    <div class="divtituloagg">
+                        <h6 style="margin-left: 2vh; margin-top: 1vh; margin-bottom: 1vh;">Buscar Usuarios por Cedula.</h6>
+                    </div>
+                    <div class="divcuadrobusqueda">
+                        
+                        <div class="cuadrobusqueda">
+                            <input class="cuadritobusqueda" type="text" id="buscadorCedula" placeholder="Escribe el id del producto">
+                            <button class="botonbusquedausuarios">
+                                <img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa" alt="Buscar">
+                            </button>
+                        </div>
+                        <div class="cuadrobusqueda2">
+                            <div class="cuadrorecientes" id="busquedareciente">
+                                <ul class="listareciente">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 4vh;" class="divmostrarproductos">
+                        <div style="margin-top: 0vh; width: 100%;" class="divtituloagg">
+                            <h6 style="margin-left: 2vh; margin-top: 1vh; margin-bottom: 1vh;"> Usuarios Ingresados.</h6>
+                        </div>
+                        <div class="mostrarusuarios">
+                            
+                            <p id="mensaje-no-usuario" style="display: none; color: red; font-weight: bold; text-align: center; margin-top: 2vh;">
+                                No se encontraron usuarios con esa cédula.
+                            </p>
+                            {% if usuarios %}
+                                {% for u in usuarios %}
+                                    <div class="divdivuser">
+                                        <div class="botoneditaroeliminar">
+                                            <div class="boton1">
+                                                <button  class="buttonEstado" onclick="cambiarEstadoUsuario({{ u.id_usuario }})">
+                                                    {% if u.estado %}
+                                                        off
+                                                    {% else %}
+                                                        on
+                                                    {% endif %}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="divuser">
+                                            <div class="colum1" style="display: flex; justify-content: center; align-items: center;">
+                                                <div class="genero">
+                                                    <img style="border: 1px ridge black;" class="Imggener" src="{{ url_for('static', filename='img/mujer.png') }}" alt="Imagen Usuario">
+                                                </div>
+                                            </div>
+                                            <div class="colum2" style="display: flex; justify-content: center; align-items: center;">
+                                                <div class="divnombreydatos">
+                                                    <div class="nombredato">
+                                                        <h3>{{ u.nombre }} {{ u.apellido }}</h3>
+                                                    </div>
+                                                    <div class="divdatos">
+                                                        <div class="dato1 displaydatos">
+                                                            <div class="caracter">
+                                                                <h5>ID:</h5>
+                                                            </div>
+                                                            <div class="pedircaracter">{{ u.codigo_empleado }}</div>
+
+                                                        </div>
+                                                        <div class="dato2 displaydatos">
+                                                            <div class="caracter">
+                                                                <h5>Correo:</h5>
+                                                            </div>
+                                                            <div class="pedircaracter">{{ u.correo }}</div>
+                                                        </div>
+                                                        <div class="dato3 displaydatos">
+                                                            <div class="caracter">
+                                                                <h5>Cédula:</h5>
+                                                            </div>
+                                                            <div class="pedircaracter">{{ u.id_usuario }}</div>
+                                                        </div>
+                                                        <div class="dato4 displaydatos">
+                                                            <div class="caracter">
+                                                                <h5>Rol:</h5>
+                                                            </div>
+                                                            <div class="pedircaracter">{{ u.rol }}</div>
+                                                        </div>
+                                                        <!-- ESTADO VISUAL -->
+                                                        <div class="dato5 displaydatos estadoUsuario" id="estado-{{ u.id_usuario }}">
+                                                            <div class="caracter">
+                                                                <h5>Estado:</h5>
+                                                            </div>
+                                                            <div id="estado-texto-{{ u.id_usuario }}" class="pedircaracter {{ 'activo' if u.estado else 'inactivo' }}">
+                                                                {% if u.estado %}
+                                                                    Activo
+                                                                {% else %}
+                                                                    Inactivo
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No hay usuarios registrados.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="sesioncontent flex1 contenido oculto" id="agregaruser">
+                    <div class="divtituloagg">
+                        <h6 style="margin-left: 2vh;">Agregar Usuario.</h6>
+                    </div>
+                    <form id="form-empleado" class="formularioagg">
+                        <div class="divformularioagg">
+                            <div class="preguntas">
+                                <div class="preguntardatos">
+                                    <div class="pregunta">
+                                        <label for="id_usuario">-Ingrese la ID del Usuario</label>
+                                        <input style="padding-left: 1vh;" type="number" id="id_usuario" name="id_usuario" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="nombre">-Ingrese el Nombre del Usuario</label>
+                                        <input style="padding-left: 1vh;" type="text" id="nombre" name="nombre" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="apellido">-Ingrese el Apellido</label>
+                                        <input style="padding-left: 1vh;" type="text" id="apellido" name="apellido" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="correo">-Ingrese el Correo</label>
+                                        <input style="padding-left: 1vh;" type="email" id="correo" name="correo" required>
+                                    </div>
+                                    <div class="pregunta">
+                                        <label for="contrasena">-Ingrese la Contraseña</label>
+                                        <input style="padding-left: 1vh;" type="password" id="contrasena" name="contrasena" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divbotonaggproducto">
+                                <button style="height: 4.5vh; width: 25vh; margin-bottom: 10vh;" class="botonsito" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <div class="sesioncontent flex1 contenido oculto" id="Recibos">
                     <div class="divtituloagg ">
                         <h6 style="margin-left: 2vh;">Facturas Registradas.</h6>
                     </div>
 
                     <div class="divdisplayfactura">
-    <!-- Título sección mensual -->
-    <div class="divtituloagg sticky" style="outline: 1px solid;">
-        <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
-    </div>
+                        <div class="divtituloagg sticky" style="outline: 1px solid;">
+                            <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
+                        </div>
 
-    <!-- Selector de año único -->
-    <div class="divfacturas">
-        <div style="margin: 2vh;">
-            <label for="selector-anio"><strong>Seleccionar año:</strong></label>
-            <select id="selector-anio" style="margin-left: 1vh; padding: 0.5vh;"></select>
-        </div>
+                        <!-- Selector de año único -->
+                        <div class="divfacturas">
+                            <div style="margin: 2vh;">
+                                <label for="selector-anio"><strong>Seleccionar año:</strong></label>
+                                <select id="selector-anio" style="margin-left: 1vh; padding: 0.5vh;"></select>
+                            </div>
 
-        <!-- Contenedor dinámico de meses -->
-        <div id="contenedor-meses"></div>
-    </div>
+                            <!-- Contenedor dinámico de meses -->
+                            <div id="contenedor-meses"></div>
+                        </div>
 
-    <!-- Título sección de estadísticas -->
-    <div class="divtituloagg sticky">
-        <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
-    </div>
+                        <!-- Título sección de estadísticas 
+                        <div class="divtituloagg sticky">
+                            <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
+                        </div>
 
-    <!-- Contenedor de la gráfica -->
-    <div class="divgraficas" style="width: 90%; max-width: 700px; margin: auto;">
-        <canvas id="grafica-ventas-anuales" height="300"></canvas>
-    </div>
-</div>
+                         Contenedor de la gráfica 
+                        <div class="divgraficas" style="width: 90%; max-width: 700px; margin: auto;">
+                            <canvas id="grafica-ventas-anuales" height="300"></canvas>
+                        </div>
+                    </div>-->
 
 
                 </div>

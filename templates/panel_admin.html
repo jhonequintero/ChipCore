@@ -204,7 +204,7 @@
                     <div class="divtituloagg">
                         <h6 style="margin: 2vh;">Productos.</h6>
                     </div>
-                    <div class="divmostrarproductos">
+                    <div class="divmostrarproductos" >
                         <div style="border: 2px ridge; border-bottom: none" class="divtituloagg">
                             <h6 style="margin: 2vh;">Productos Registrados.</h6>
                         </div>
@@ -214,8 +214,8 @@
                                 No se encontraron productos con esas iniciales.
                             </p>
                             {% if productos %}
-                                {% for p in productos %}
-                                    <div class="divdivproducto" > <!--  id="uni" -->
+                                {% for p in productos %} <!--   for p in productos[-6:]  usarlo asi para cuando los inpust este muy lentos en la seccion de producto-->
+                                    <div class="divdivproducto" >
                                             <div class="botonx">
                                                 <button class="buttonX btn-editar-producto"
                                                     data-id="{{ p.id_producto }}"
@@ -248,7 +248,7 @@
                                                             {% if p.cantidad_producto > 0 %}
                                                                 {{ p.cantidad_producto }}
                                                             {% else %}
-                                                                <span>AGOTADO</span>
+                                                                <span>variable</span>
                                                             {% endif %}
                                                         </div>
 
@@ -257,7 +257,8 @@
                                                 <div class="divprice">
                                                     <div class="precio">
                                                         <h4>Precio:</h4>
-                                                        <div class="insertprecio">${{ "%.2f"|format(p.precio_producto) }}</div>
+                                                       <div class="insertprecio">${{ "{:,.2f}".format(p.precio_producto).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -268,34 +269,34 @@
                                 <p>No hay productos registrados.</p>
                             {% endif %}
                         </div>
-<div id="modal-editar" style="display:none;" class="modal">
-    <div class="modal-contenido">
-        <span class="cerrar" onclick="cerrarModal()">&times;</span>
-        <h2>Editar Producto</h2>                      
-        <form id="form-editar-producto">
+            <div id="modal-editar" style="display:none;" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar" onclick="cerrarModal()">&times;</span>
+                    <h2>Editar Producto</h2>                      
+                    <form id="form-editar-producto">
 
-            <input type="hidden" name="id_producto" id="modal_id">
+                        <input type="hidden" name="id_producto" id="modal_id">
 
-            <label>Nombre:</label>
-            <input type="text" name="nombre_producto" id="modal_nombre"><br>
+                        <label>Nombre:</label>
+                        <input type="text" name="nombre_producto" id="modal_nombre"><br>
 
-            <label>Descripción:</label>
-            <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
+                        <label>Descripción:</label>
+                        <textarea name="descripcion_producto" id="modal_descripcion"></textarea><br>
 
-            <label>Cantidad:</label>
-            <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
+                        <label>Cantidad:</label>
+                        <input type="number" name="cantidad_producto" id="modal_cantidad"><br>
 
-            <label>Precio:</label>
-            <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
+                        <label>Precio:</label>
+                        <input type="number" step="0.01" name="precio_producto" id="modal_precio"><br>
 
-            <button type="submit">Guardar cambios</button>
-            
-            <button type="button" onclick="cerrarModal()">Cancelar</button>
-        </form>
+                        <button type="submit">Guardar cambios</button>
+                        
+                        <button type="button" onclick="cerrarModal()">Cancelar</button>
+                    </form>
 
-        </div>
-    </div>
-</div>
+                    </div>
+                </div>
+            </div>
                     <div class="compraproductos">
                         <h2>Productos a comprar</h2>
                         <div class="divpedirdatosclient">
@@ -330,11 +331,11 @@
                                         <div class="addid">
                                             <h5 style="margin-bottom: 1vh;">ID</h5>
                                             <div class="entradadeid">
-                                                <input class="entradaid" type="number" placeholder="ID del producto">
+                                                <input class="entradaid" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="ID del producto" autocomplete="off">
                                             </div>
                                             <h5 style="margin-top: 1.5vh;">Cantidad</h5>
                                             <div class="entradadeid">
-                                                <input class="entradaid" type="number" placeholder="Cantidad a agregar">
+                                                <input class="entradaid" type="text" pattern="[0-9]*" inputmode="numeric" placeholder="Cantidad a agregar" autocomplete="off">
                                             </div>
                                             <button class="botonaddid">Agregar</button>
                                         </div>
@@ -491,32 +492,31 @@
                     </div>
 
                     <div class="divdisplayfactura">
-    <!-- Título sección mensual -->
-    <div class="divtituloagg sticky" style="outline: 1px solid;">
-        <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
-    </div>
+                        <div class="divtituloagg sticky" style="outline: 1px solid;">
+                            <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
+                        </div>
 
-    <!-- Selector de año único -->
-    <div class="divfacturas">
-        <div style="margin: 2vh;">
-            <label for="selector-anio"><strong>Seleccionar año:</strong></label>
-            <select id="selector-anio" style="margin-left: 1vh; padding: 0.5vh;"></select>
-        </div>
+                        <!-- Selector de año único -->
+                        <div class="divfacturas">
+                            <div style="margin: 2vh;">
+                                <label for="selector-anio"><strong>Seleccionar año:</strong></label>
+                                <select id="selector-anio" style="margin-left: 1vh; padding: 0.5vh;"></select>
+                            </div>
 
-        <!-- Contenedor dinámico de meses -->
-        <div id="contenedor-meses"></div>
-    </div>
+                            <!-- Contenedor dinámico de meses -->
+                            <div id="contenedor-meses"></div>
+                        </div>
 
-    <!-- Título sección de estadísticas -->
-    <div class="divtituloagg sticky">
-        <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
-    </div>
+                        <!-- Título sección de estadísticas -->
+                        <div class="divtituloagg sticky">
+                            <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
+                        </div>
 
-    <!-- Contenedor de la gráfica -->
-    <div class="divgraficas" style="width: 90%; max-width: 700px; margin: auto;">
-        <canvas id="grafica-ventas-anuales" height="300"></canvas>
-    </div>
-</div>
+                        <!-- Contenedor de la gráfica -->
+                        <div class="divgraficas" style="width: 90%; max-width: 700px; margin: auto;">
+                            <canvas id="grafica-ventas-anuales" height="300"></canvas>
+                        </div>
+                    </div>
 
 
                 </div>
