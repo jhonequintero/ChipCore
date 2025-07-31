@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel trabajador</title>
+    <title>Panel Trabajador</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -31,7 +33,7 @@
                             </div>
                         </button>
                     </div>
-                 
+                   
                     <div class="botonesventana">
                         <button class="botonwindow" onclick="Enseñarpag('buscarproducto')">
                             <img src="{{ url_for('static', filename='img/buscarproductos.png') }}" alt="Buscar Productos" class="buscarboton">
@@ -39,7 +41,6 @@
                             <div class="lineanimada"></div>
                         </button>
                     </div>
-                    
                    
                     <div class="botonesventana">
                         <button class="botonwindow" onclick="Enseñarpag('Recibos')">
@@ -85,46 +86,18 @@
                                         <span class="label">Rol:</span>
                                         <span class="valor">{{ datos.rol }}</span>
                                     </div>
-                                    <div class="campo">
+                                     <div class="campo">
                                         <span class="label">Código User:</span>
                                         <span class="valor">{{ datos.codigo_empleado }}</span>
-                                    </div>
+                                    </div>-
                                 </div>
                             </div>
                             
                         </div>
-                        <div style="" class="divboton ">  <!--  <button type="button" class="botonsito" onclick="abrirModalActualizarPerfil()">Actualizar perfil</button> -->
+                        <div style="" class="divboton "> 
                                 <button onclick="window.location.href='{{ url_for('inicio') }}'" class="botonsito">Cerrar sesión</button>
                             </div>
-                        <!-- Modal Actualizar Perfil -->
-<div id="modalActualizarPerfil" class="modalactualizar" style="display: none;">
-    <div class="modal-contenido">
-        <span class="cerrar" onclick="cerrarModalActualizarPerfil()">&times;</span>
-        <h2>Actualizar Perfil</h2>
-        <form id="formActualizarPerfil">
-            <label>Cédula:</label>
-            <span style="font-weight: bold;">{{ datos.id }}</span>
-            <input type="hidden" name="id_usuario" value="{{ datos.id }}">
-
-            <label>Nombre</label>
-            <input type="text" name="nombre" id="nuevo_nombre" value="{{ datos.nombre }}" required>
-
-            <label>Apellidos</label>
-            <input type="text" name="apellido" id="nuevo_apellido" value="{{ datos.apellido }}" required>
-
-            <label>Correo</label>
-            <input type="email" name="correo" id="nuevo_correo" value="{{ datos.correo }}" required>
-
-            <label>Contraseña actual</label>
-            <input type="password" name="contrasena_actual" required>
-
-            <label>Nueva contraseña</label>
-            <input type="password" name="nueva_contrasena">
-
-            <button type="submit">Guardar cambios</button>
-        </form>
-    </div>
-</div>
+                       
 
                     </div>
                 </div>
@@ -136,12 +109,11 @@
                     <div class="divcuadrobusqueda">
                         
                         <div class="cuadrobusqueda">
-                            <input class="cuadritobusqueda" type="text" id="buscador" placeholder="Escribe el id o nombre del producto">
-                            <button class="botonbusquedaProductos" onclick="filtrarProductos()">
+                            <input class="cuadritobusqueda" type="text" id="buscador" placeholder="Escribe el id del producto">
+                            <button class="botonbusquedaProductos">
                                 <img src="{{ url_for('static', filename='img/lupe.png') }}" class="imagenlupa" alt="Buscar">
                             </button>
                         </div>
-
                         <div class="cuadrobusqueda2">
                             <div class="cuadrorecientes" id="busquedareciente">
                                 <ul class="listareciente">
@@ -164,7 +136,7 @@
                             {% if productos %}
                                 {% for p in productos %}
                                     <div class="divdivproducto" > <!--  id="uni" -->
-                                           
+                                          
                                        
                                         <div class="divproducto">
                                             <div class="colum1">
@@ -206,7 +178,8 @@
                                 <p>No hay productos registrados.</p>
                             {% endif %}
                         </div>
-                                            </div>
+
+</div>
                     <div class="compraproductos">
                         <h2>Productos a comprar</h2>
                         <div class="divpedirdatosclient">
@@ -256,10 +229,39 @@
                         </div>
                     </div>
                 </div>
-                
-                
                 <div class="sesioncontent flex1 contenido oculto" id="Recibos">
-                    
+                    <div class="divtituloagg ">
+                        <h6 style="margin-left: 2vh;">Facturas Registradas.</h6>
+                    </div>
+
+                    <div class="divdisplayfactura">
+    <!-- Título sección mensual -->
+    <div class="divtituloagg sticky" style="outline: 1px solid;">
+        <h6 style="margin: 2vh;">Registro Ventas Por Mes.</h6>
+    </div>
+
+    <!-- Selector de año único -->
+    <div class="divfacturas">
+        <div style="margin: 2vh;">
+            <label for="selector-anio"><strong>Seleccionar año:</strong></label>
+            <select id="selector-anio" style="margin-left: 1vh; padding: 0.5vh;"></select>
+        </div>
+
+        <!-- Contenedor dinámico de meses -->
+        <div id="contenedor-meses"></div>
+    </div>
+
+    <!-- Título sección de estadísticas -->
+    <div class="divtituloagg sticky">
+        <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
+    </div>
+
+    <!-- Contenedor de la gráfica -->
+    <div class="divgraficas" style="width: 90%; max-width: 700px; margin: auto;">
+        <canvas id="grafica-ventas-anuales" height="300"></canvas>
+    </div>
+</div>
+
 
                 </div>
             </div>
@@ -277,10 +279,7 @@
         <div class="tfoot">
         </div>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="{{ url_for('static', filename='js/script_trabajador.js') }}"></script>
 </body>
 </html>
-   

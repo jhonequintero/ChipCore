@@ -5,7 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import random
 from datetime import timedelta
+from collections import defaultdict
+
 import os
+from sqlalchemy import func
 from num2words import num2words
 import re
 import random
@@ -784,6 +787,99 @@ def finalizar_compra():
         print("Error en /finalizar_compra:", e)
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
 
+
+
+
+@app.route("/api/anios-disponibles")
+def anios_disponibles():
+    try:
+        anios = db.session.query(func.extract('year', VentaCabecera.fecha)).distinct().all()
+        return jsonify([int(a[0]) for a in anios if a[0]])
+    except Exception as e:
+        print("🔥 ERROR EN /api/anios-disponibles:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+@app.route("/api/ventas-anuales/<int:anio>")
+def ventas_anuales(anio):
+    try:
+        # Consulta las ventas reales del año
+        ventas_real = (
+            db.session.query(
+                func.extract('month', VentaCabecera.fecha).label('mes'),
+                func.sum(VentaCabecera.total).label('total')
+            )
+            .filter(func.extract('year', VentaCabecera.fecha) == anio)
+            .group_by('mes')
+            .all()
+        )
+
+        # Armar estructura con todos los meses inicializados en 0
+        ventas_por_mes = {mes: 0 for mes in range(1, 13)}
+
+        # Actualizar solo los que sí tienen ventas reales
+        for mes, total in ventas_real:
+            ventas_por_mes[int(mes)] = float(total)
+
+        # Convertir a lista ordenada para frontend
+        resultado_final = [{"mes": mes, "total": ventas_por_mes[mes]} for mes in range(1, 13)]
+
+        return jsonify(resultado_final)
+
+    except Exception as e:
+        print("🔥 ERROR EN /api/ventas-anuales/<anio>:", e)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/facturas-anuales/<int:anio>")
+def obtener_facturas_anuales(anio):
+    try:
+        meses = {mes: {"total_mes": 0, "facturas": []} for mes in range(1, 13)}
+
+        ventas = (
+            db.session.query(VentaCabecera)
+            .filter(func.extract("year", VentaCabecera.fecha) == anio)
+            .order_by(VentaCabecera.fecha)
+            .all()
+        )
+
+        for venta in ventas:
+            mes = venta.fecha.month
+            detalles = VentaDetalle.query.filter_by(id_venta=venta.id_venta).all()
+            items = []
+            for det in detalles:
+                prod = Producto.query.get(det.id_producto)
+                items.append({
+                    "nombre": prod.nombre_producto,
+                    "cantidad": det.cantidad,
+                    "precio_unitario": det.precio,
+                    "total": det.cantidad * det.precio
+                })
+
+            cliente = Cliente.query.get(venta.id_cliente)
+            vendedor = Usuario.query.get(venta.id_vendedor)
+
+            factura_info = {
+                "folio": venta.folio,
+                "fecha": venta.fecha.strftime("%d/%m/%Y"),
+                "hora": venta.hora,
+                "total": venta.total,
+                "cliente": cliente.nombre_completo if cliente else "N/A",
+                "vendedor": vendedor.nombre if vendedor else "N/A",
+                "items": items
+            }
+
+            meses[mes]["facturas"].append(factura_info)
+            meses[mes]["total_mes"] += venta.total
+
+        return jsonify(meses)
+
+    except Exception as e:
+        print("🔥 ERROR en facturas-anuales:", e)
+        return jsonify({"error": str(e)}), 500
+
 def convertir_a_letras(numero):
     """
     Convierte un número (entero o flotante) a su representación en letras en español,
@@ -816,54 +912,76 @@ def convertir_a_letras(numero):
         return f"Error al convertir el número: {e}"
 
 
-@app.route('/api/ventas')
-def api_ventas():
+
+@app.route('/api/facturas-por-anio/<int:anio>')
+def facturas_por_anio(anio):
     if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
-        return jsonify({"error": "Acceso no autorizado para ver ventas"}), 403
+        return jsonify({"error": "Acceso no autorizado"}), 403
 
     user_id = session.get('id_usuario')
     user_rol = session.get('tipo')
 
     query = db.session.query(
+        VentaCabecera.id_venta,
         VentaCabecera.fecha,
         VentaCabecera.hora,
         VentaCabecera.folio,
-        Cliente.nombre_completo.label('nombre_cliente'),
-        Cliente.cedula.label('cedula_cliente'),
-        Producto.id_producto.label('codigo_producto'),
-        Producto.nombre_producto.label('nombre_producto'),
+        Cliente.nombre_completo.label('cliente'),
+        VentaCabecera.total.label('total_venta'),
+        Usuario.nombre.label('vendedor'),
+        Producto.nombre_producto.label('producto'),
         VentaDetalle.cantidad,
-        VentaDetalle.precio.label('precio_unitario_detalle'),
-        (VentaDetalle.cantidad * VentaDetalle.precio).label('total_detalle_producto'),
-        VentaCabecera.total.label('total_venta_cabecera'),
-        Usuario.nombre.label('vendedor')
+        VentaDetalle.precio.label('precio_unitario')
     ) \
     .join(Cliente, VentaCabecera.id_cliente == Cliente.id_cliente) \
     .join(Usuario, VentaCabecera.id_vendedor == Usuario.id_usuario) \
     .join(VentaDetalle, VentaDetalle.id_venta == VentaCabecera.id_venta) \
-    .join(Producto, VentaDetalle.id_producto == Producto.id_producto)
+    .join(Producto, VentaDetalle.id_producto == Producto.id_producto) \
+    .filter(db.extract('year', VentaCabecera.fecha) == anio)
 
     if user_rol == 'empleado':
         query = query.filter(VentaCabecera.id_vendedor == user_id)
 
-    ventas = query.all()
+    datos = query.all()
 
-    resultado = []
-    for v in ventas:
-        resultado.append({
-            'fecha': v.fecha.strftime('%Y-%m-%d'),
-            'hora': v.hora.strftime('%H:%M:%S'),
-            'folio': v.folio,
-            'nombre_cliente': v.nombre_cliente,
-            'cedula_cliente': v.cedula_cliente,
-            'codigo_producto': v.codigo_producto,
-            'nombre_producto': v.nombre_producto,
-            'cantidad': v.cantidad,
-            'precio_unitario': float(v.precio_unitario_detalle),
-            'total_detalle_producto': float(v.total_detalle_producto),
-            'total_venta_completa': float(v.total_venta_cabecera),
-            'vendedor': v.vendedor
+    agrupado = defaultdict(lambda: defaultdict(list))  # {mes: {folio: [productos]}}
+
+    cabeceras = {}  # {(folio, fecha): {...}}
+
+    for v in datos:
+        mes = v.fecha.month
+        clave = (v.folio, v.fecha)
+
+        agrupado[mes][v.folio].append({
+            "producto": v.producto,
+            "cantidad": v.cantidad,
+            "precio_unitario": float(v.precio_unitario),
+            "total": float(v.precio_unitario * v.cantidad)
         })
+
+        # Guardar una sola vez los datos principales de la factura
+        if clave not in cabeceras:
+            cabeceras[clave] = {
+                "folio": v.folio,
+                "fecha": v.fecha.strftime('%Y-%m-%d'),
+                "hora": v.hora.strftime('%H:%M'),
+                "cliente": v.cliente,
+                "total": float(v.total_venta),
+                "vendedor": v.vendedor
+            }
+
+    resultado = {}
+
+    for mes in range(1, 13):
+        resultado[mes] = []
+        for folio, productos in agrupado[mes].items():
+            # Busca por (folio, fecha) para acceder a la cabecera
+            clave = next(k for k in cabeceras if k[0] == folio)
+            info = cabeceras[clave]
+            resultado[mes].append({
+                **info,
+                "detalles": productos
+            })
 
     return jsonify(resultado)
 
@@ -911,6 +1029,8 @@ def generar_pdf(datos_para_pdf):
     # Usamos configuration=config_pdf que ya definimos globalmente.
     pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
     return pdf_bytes
+
+
 
 # --- Tu ruta de logout ---
 @app.route('/logout')

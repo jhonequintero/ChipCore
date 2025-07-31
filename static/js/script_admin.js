@@ -76,8 +76,6 @@ function showMessageModal(message, type = 'info') {
 function deslizarventana() {
     document.getElementById('ventana').classList.toggle('open');
 }
-
-// Función para mostrar/ocultar secciones de contenido
 function Enseñarpag(id) {
     const secciones = document.querySelectorAll(".contenido");
     secciones.forEach(s => s.classList.add("oculto"));
@@ -94,9 +92,7 @@ function Enseñarpag(id) {
         }
 
 
-        if (id === "Recibos") {
-            cargarVentas();
-        }
+
     }
 }
 
@@ -515,12 +511,12 @@ function cambiarEstadoUsuario(id) {
                         estadoTexto.textContent = "Activo";
                         estadoTexto.classList.remove("inactivo");
                         estadoTexto.classList.add("activo");
-                        boton.innerText = "Desactivar";
+                        boton.innerText = "off";
                     } else {
                         estadoTexto.textContent = "Inactivo";
                         estadoTexto.classList.remove("activo");
                         estadoTexto.classList.add("inactivo");
-                        boton.innerText = "Activar";
+                        boton.innerText = "on";
                     }
                 }
             } else {
@@ -543,65 +539,65 @@ function cambiarEstadoUsuario(id) {
 // --- Funciones relacionadas con ventas y usuarios ---
 
 // Función para cargar registros de ventas
-async function cargarVentas() {
-    const contenedor = document.querySelector('.divmostrarfacturas');
-    contenedor.innerHTML = 'Cargando registros de ventas...';
+// async function cargarVentas() {
+//     const contenedor = document.querySelector('.divmostrarfacturas');
+//     contenedor.innerHTML = 'Cargando registros de ventas...';
 
-    try {
-        const res = await fetch('/api/ventas');
-        if (!res.ok) throw new Error('Error al obtener ventas');
+//     try {
+//         const res = await fetch('/api/ventas');
+//         if (!res.ok) throw new Error('Error al obtener ventas');
 
-        const ventas = await res.json();
+//         const ventas = await res.json();
 
-        if (ventas.length === 0) {
-            contenedor.innerHTML = '<p>No hay registros de ventas.</p>';
-            return;
-        }
+//         if (ventas.length === 0) {
+//             contenedor.innerHTML = '<p>No hay registros de ventas.</p>';
+//             return;
+//         }
 
-        let html = `
-            <h2>Registro de Ventas</h2>
-            <table border="1" cellspacing="0" cellpadding="4">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Folio</th>
-                        <th>Nombre Cliente</th>
-                        <th>Cédula Cliente</th>
-                        <th>Código Producto</th>
-                        <th>Nombre Producto</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Vendedor</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+//         let html = `
+//             <h2>Registro de Ventas</h2>
+//             <table border="1" cellspacing="0" cellpadding="4">
+//                 <thead>
+//                     <tr>
+//                         <th>Fecha</th>
+//                         <th>Hora</th>
+//                         <th>Folio</th>
+//                         <th>Nombre Cliente</th>
+//                         <th>Cédula Cliente</th>
+//                         <th>Código Producto</th>
+//                         <th>Nombre Producto</th>
+//                         <th>Cantidad</th>
+//                         <th>Total</th>
+//                         <th>Vendedor</th>
+//                     </tr>
+//                 </thead>
+//                 <tbody>
+//         `;
 
-        ventas.forEach(v => {
-            html += `
-                <tr>
-                    <td>${v.fecha}</td>
-                    <td>${v.hora}</td>
-                    <td>${v.folio}</td>
-                    <td>${v.nombre_cliente}</td>
-                    <td>${v.cedula_cliente}</td>
-                    <td>${v.codigo_producto}</td>
-                    <td>${v.nombre_producto}</td>
-                    <td>${v.cantidad}</td>
-                    <td>$${v.total.toFixed(2)}</td>
-                    <td>${v.vendedor}</td>
-                </tr>
-            `;
-        });
+//         ventas.forEach(v => {
+//             html += `
+//                 <tr>
+//                     <td>${v.fecha}</td>
+//                     <td>${v.hora}</td>
+//                     <td>${v.folio}</td>
+//                     <td>${v.nombre_cliente}</td>
+//                     <td>${v.cedula_cliente}</td>
+//                     <td>${v.codigo_producto}</td>
+//                     <td>${v.nombre_producto}</td>
+//                     <td>${v.cantidad}</td>
+//                     <td>$${v.total.toFixed(2)}</td>
+//                     <td>${v.vendedor}</td>
+//                 </tr>
+//             `;
+//         });
 
-        html += '</tbody></table>';
-        contenedor.innerHTML = html;
+//         html += '</tbody></table>';
+//         contenedor.innerHTML = html;
 
-    } catch (error) {
-        contenedor.innerHTML = `<p>Error al cargar ventas: ${error.message}</p>`;
-    }
-}
+//     } catch (error) {
+//         contenedor.innerHTML = `<p>Error al cargar ventas: ${error.message}</p>`;
+//     }
+// }
 
 
 
@@ -902,7 +898,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const seccionRecibos = document.getElementById("Recibos");
             if (seccionRecibos && !seccionRecibos.classList.contains("oculto")) {
                 await cargarVentas();
+
+                // 🟢 ACTUALIZAR LA GRÁFICA CON EL AÑO ACTUAL
+                const anioActual = new Date().getFullYear();
+                cargarGraficaVentas(anioActual);
+
+                // 🟢 ACTUALIZAR SELECTOR DE AÑOS (opcional pero recomendado)
+                fetch('/api/anios-disponibles')
+                    .then(res => res.json())
+                    .then(anios => {
+                        const selector = document.getElementById('selector-anio');
+                        selector.innerHTML = ''; // limpiar
+                        anios.sort().forEach(anio => {
+                            const opt = document.createElement("option");
+                            opt.value = anio;
+                            opt.textContent = anio;
+                            selector.appendChild(opt);
+                        });
+
+                        selector.value = anioActual;
+                    });
             }
+
 
         } catch (err) {
             console.error("Error:", err);
@@ -967,6 +984,7 @@ document.getElementById("formActualizarPerfil").addEventListener("submit", async
         boton.innerText = "Guardar cambios";
     }
 });
+
 /*--------------------desplegables facturas --------------------*/
 const meses = document.querySelectorAll('.mes');
 meses.forEach(mes => {
@@ -984,82 +1002,233 @@ facturas.forEach(factura => {
     });
 });
 
-// function mostrarSeccion(id_seccion) {
-//     document.querySelectorAll('.seccion_ventas').forEach(seccion => {
-//         seccion.classList.add('oculto');
-//         seccion.classList.remove('visible');
-//     });
 
-//     const seccion = document.getElementById(id_seccion);
-//     if (seccion) {
-//         seccion.classList.remove('oculto');
-//         seccion.classList.add('visible');
+document.addEventListener("DOMContentLoaded", function () {
+    const contenedorFacturas = document.querySelector(".divfacturas");
+    const selector = document.getElementById("selector-anio");  // 👈 correcto
+    const añoActual = new Date().getFullYear();
 
-//         // Cargar datos si está vacío
-//         if (!seccion.dataset.cargado) {
-//             let tipo = id_seccion.replace('seccion-', '');
-//             fetch(`/api/ventas/${tipo}`)
-//                 .then(resp => resp.json())
-//                 .then(data => {
-//                     const contenedorLista = document.getElementById(`listado-${tipo}`);
-//                     const canvas = document.getElementById(`grafico-${tipo}`);
-//                     let ctx = canvas.getContext('2d');
+    // Crear y cargar selector de año (solo si está vacío)
+    if (selector.options.length === 0) {
+        for (let i = añoActual; i >= añoActual - 5; i--) {
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = i;
+            selector.appendChild(option);
+        }
+    }
+    selector.value = añoActual;
 
-//                     if (data.length === 0) {
-//                         contenedorLista.innerHTML = "<p>Sin ventas registradas.</p>";
-//                         return;
-//                     }
+    function cargarFacturasPorAño(anio) {
+        fetch(`/api/facturas-por-anio/${anio}`)
+            .then(r => r.json())
+            .then(data => {
+                contenedorFacturas.querySelectorAll(".mes, .contenido-mes").forEach(el => el.remove());
 
-//                     // Mostrar lista simple
-//                     let html = "<ul>";
-//                     let etiquetas = [];
-//                     let totales = [];
+                const nombresMeses = [
+                    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                ];
 
-//                     data.forEach(v => {
-//                         etiquetas.push(v.fecha);
-//                         totales.push(v.total);
-//                         html += `<li><strong>${v.fecha}</strong> - ${v.cliente} - $${v.total}</li>`;
-//                     });
-//                     html += "</ul>";
-//                     contenedorLista.innerHTML = html;
+                for (let i = 1; i <= 12; i++) {
+                    const nombreMes = nombresMeses[i - 1];
+                    const divMes = document.createElement("div");
+                    divMes.classList.add("mes");
+                    divMes.style.height = "30px";
+                    divMes.style.background = "#ccc";
+                    divMes.style.margin = "10px";
+                    divMes.textContent = nombreMes;
 
-//                     // Crear gráfica
-//                     new Chart(ctx, {
-//                         type: 'bar',
-//                         data: {
-//                             labels: etiquetas,
-//                             datasets: [{
-//                                 label: 'Total vendido',
-//                                 data: totales,
-//                                 backgroundColor: 'rgba(54, 162, 235, 0.6)',
-//                                 borderColor: 'rgba(54, 162, 235, 1)',
-//                                 borderWidth: 1
-//                             }]
-//                         },
-//                         options: {
-//                             responsive: true,
-//                             plugins: {
-//                                 legend: { position: 'top' },
-//                                 title: { display: true, text: `Ventas (${tipo.toUpperCase()})` }
-//                             },
-//                             scales: {
-//                                 y: {
-//                                     beginAtZero: true,
-//                                     ticks: {
-//                                         callback: value => '$' + value.toLocaleString()
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     });
+                    const contenedorMes = document.createElement("div");
+                    contenedorMes.classList.add("contenido-mes");
 
-//                     seccion.dataset.cargado = "true";
-//                 })
-//                 .catch(error => {
-//                     seccion.innerHTML = "<p>Error al cargar datos.</p>";
-//                     console.error(error);
-//                 });
+                    const facturas = data[i];
 
-//         }
-//     }
-// }
+                    if (!facturas || facturas.length === 0) {
+                        const mensaje = document.createElement("div");
+                        mensaje.textContent = "No hay ventas registradas";
+                        mensaje.classList.add("factura");
+                        contenedorMes.appendChild(mensaje);
+                    } else {
+                        facturas.forEach(factura => {
+                            const divFactura = document.createElement("div");
+                            divFactura.classList.add("factura");
+                            divFactura.textContent = `Factura #${factura.folio} - Cliente: ${factura.cliente} - $${factura.total.toLocaleString()}`;
+
+                            const contenedorDetalle = document.createElement("div");
+                            contenedorDetalle.classList.add("contenido-factura");
+
+                            const recibo = document.createElement("div");
+                            recibo.classList.add("recibo");
+
+                            const tabla = document.createElement("table");
+                            tabla.innerHTML = `
+                                <thead>
+                                    <tr>
+                                        <th>Folio</th><th>Fecha</th><th>Hora</th>
+                                        <th>Producto</th><th>Cantidad</th>
+                                        <th>Precio Unitario</th><th>Total</th><th>Vendedor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${factura.detalles.map(prod => `
+                                        <tr>
+                                            <td>${factura.folio}</td>
+                                            <td>${factura.fecha}</td>
+                                            <td>${factura.hora}</td>
+                                            <td>${prod.producto}</td>
+                                            <td>${prod.cantidad}</td>
+                                            <td>$${prod.precio_unitario.toLocaleString()}</td>
+                                            <td>$${prod.total.toLocaleString()}</td>
+                                            <td>${factura.vendedor}</td>
+                                        </tr>`).join("")}
+                                </tbody>
+                            `;
+                            recibo.appendChild(tabla);
+                            contenedorDetalle.appendChild(recibo);
+                            contenedorMes.appendChild(divFactura);
+                            contenedorMes.appendChild(contenedorDetalle);
+
+                            divFactura.addEventListener("click", () => {
+                                document.querySelectorAll(".factura").forEach(f => f.classList.remove("abierto"));
+                                document.querySelectorAll(".contenido-factura").forEach(cf => cf.classList.remove("abierto"));
+                                divFactura.classList.add("abierto");
+                                contenedorDetalle.classList.add("abierto");
+                            });
+                        });
+                    }
+
+                    contenedorFacturas.appendChild(divMes);
+                    contenedorFacturas.appendChild(contenedorMes);
+
+                    divMes.addEventListener("click", () => {
+                        document.querySelectorAll(".mes").forEach(m => {
+                            if (m !== divMes) m.classList.remove("abierto");
+                        });
+                        divMes.classList.toggle("abierto");
+                    });
+                }
+            });
+    }
+
+    selector.addEventListener("change", () => {
+        const anio = selector.value;
+        cargarFacturasPorAño(anio);
+        cargarDatosYActualizarGrafica(anio);
+    });
+
+    cargarFacturasPorAño(añoActual);
+    cargarDatosYActualizarGrafica(añoActual);
+});
+
+let grafica;
+let modoLinea = false;
+
+// Función para obtener años disponibles desde el backend
+async function cargarAnios() {
+    console.log("🔍 Ejecutando cargarAnios()");
+    const res = await fetch('/api/anios-disponibles');
+    let anios = await res.json();
+
+    anios = [...new Set(anios)]; // elimina duplicados
+    anios.sort();
+
+    const selector = document.getElementById("selector-anio");
+    selector.innerHTML = '';
+
+    anios.forEach(anio => {
+        const opt = document.createElement("option");
+        opt.value = anio;
+        opt.textContent = anio;
+        selector.appendChild(opt);
+    });
+
+    const anioActual = new Date().getFullYear();
+    selector.value = anioActual;
+
+    cargarDatosYActualizarGrafica(anioActual);
+}
+
+async function cargarDatosYActualizarGrafica(anio) {
+    const res = await fetch(`/api/ventas-anuales/${anio}`);
+    const data = await res.json();
+
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    // 🔍 Aseguramos que los datos lleguen bien en formato {mes: N, total: X}
+    const valores = Array(12).fill(0);
+    data.forEach(dato => {
+        const index = dato.mes - 1;
+        if (index >= 0 && index < 12) {
+            valores[index] = dato.total;
+        }
+    });
+
+    if (grafica) grafica.destroy();
+
+    const ctx = document.getElementById("grafica-ventas-anuales").getContext("2d");
+    const tipoGrafica = modoLinea ? 'line' : 'bar';
+
+    grafica = new Chart(ctx, {
+        type: tipoGrafica,
+        data: {
+            labels: meses,
+            datasets: [{
+                label: 'Ventas anuales',
+                data: valores,
+                backgroundColor: modoLinea ? 'rgba(74, 144, 226, 0.3)' : '#4a90e2',
+                borderColor: '#4a90e2',
+                borderWidth: 2,
+                pointBackgroundColor: '#4a90e2',
+                fill: modoLinea,
+                tension: 0.3,
+                borderRadius: modoLinea ? 0 : 5,
+                pointRadius: modoLinea ? 5 : 0,
+                barPercentage: 0.6,
+                categoryPercentage: 0.7
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                duration: 800,
+                easing: 'easeInOutQuart'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: valor => `$${valor.toLocaleString()}`
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: context => `$${context.raw.toLocaleString()}`
+                    }
+                },
+                legend: {
+                    onClick: function () {
+                        modoLinea = !modoLinea;
+                        cargarDatosYActualizarGrafica(anio); // recargar con el nuevo tipo
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+
+document.getElementById("selector-anio").addEventListener("change", function () {
+    const año = this.value;
+    cargarFacturasPorAño(año);              // ✅ actualiza las facturas
+    cargarDatosYActualizarGrafica(año);     // ✅ actualiza la gráfica
+});
+
+
+
+// Cargar todo al iniciar
+cargarAnios();
