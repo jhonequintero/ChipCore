@@ -184,7 +184,7 @@
                 </div>
                 <div style="overflow-y: auto;" class="sesioncontent flex1 contenido oculto" id="buscarproducto">
                     <div class="divtituloagg">
-                        <h6 style="margin: 2vh;">Agregar Producto.</h6>
+                        <h6 style="margin: 2vh;">Buscar Producto.</h6>
                     </div>
                     <div class="divcuadrobusqueda">
                         
@@ -364,7 +364,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="margin-bottom: 4vh;" class="divmostrarproductos">
+                    <div style="margin-bottom: 4vh; margin-top: 5vh" class="divmostrarproductos">
                         <div style="margin-top: 0vh; width: 100%;" class="divtituloagg">
                             <h6 style="margin-left: 2vh; margin-top: 1vh; margin-bottom: 1vh;"> Usuarios Ingresados.</h6>
                         </div>
@@ -378,17 +378,18 @@
                                     <div class="divdivuser">
                                         <div class="botoneditaroeliminar">
                                             <div class="boton1">
-                                                <button  class="buttonEstado" onclick="cambiarEstadoUsuario({{ u.id_usuario }})">
+                                                <button class="button" onclick="cambiarEstadoUsuario({{ u.id_usuario }})">
                                                     {% if u.estado %}
                                                         off
                                                     {% else %}
                                                         on
                                                     {% endif %}
                                                 </button>
+                                                
                                             </div>
                                         </div>
                                         <div class="divuser">
-                                            <div class="colum1" style="display: flex; justify-content: center; align-items: center;">
+                                            <div  class="colum1" style="display: flex; justify-content: center; align-items: center;">
                                                 <div class="genero">
                                                     <img style="border: 1px ridge black;" class="Imggener" src="{{ url_for('static', filename='img/mujer.png') }}" alt="Imagen Usuario">
                                                 </div>
@@ -403,33 +404,33 @@
                                                             <div class="caracter">
                                                                 <h5>ID:</h5>
                                                             </div>
-                                                            <div class="pedircaracter">{{ u.codigo_empleado }}</div>
+                                                            <div style="font-size: 2vh;" class="pedircaracter">{{ u.codigo_empleado }}</div>
 
                                                         </div>
                                                         <div class="dato2 displaydatos">
                                                             <div class="caracter">
                                                                 <h5>Correo:</h5>
                                                             </div>
-                                                            <div class="pedircaracter">{{ u.correo }}</div>
+                                                            <div style="font-size: 2vh;" class="pedircaracter">{{ u.correo }}</div>
                                                         </div>
                                                         <div class="dato3 displaydatos">
                                                             <div class="caracter">
                                                                 <h5>Cédula:</h5>
                                                             </div>
-                                                            <div class="pedircaracter">{{ u.id_usuario }}</div>
+                                                            <div style="font-size: 2vh;" class="pedircaracter">{{ u.id_usuario }}</div>
                                                         </div>
                                                         <div class="dato4 displaydatos">
                                                             <div class="caracter">
                                                                 <h5>Rol:</h5>
                                                             </div>
-                                                            <div class="pedircaracter">{{ u.rol }}</div>
+                                                            <div style="font-size: 2vh;" class="pedircaracter">{{ u.rol }}</div>
                                                         </div>
                                                         <!-- ESTADO VISUAL -->
                                                         <div class="dato5 displaydatos estadoUsuario" id="estado-{{ u.id_usuario }}">
                                                             <div class="caracter">
                                                                 <h5>Estado:</h5>
                                                             </div>
-                                                            <div id="estado-texto-{{ u.id_usuario }}" class="pedircaracter {{ 'activo' if u.estado else 'inactivo' }}">
+                                                            <div style="font-size: 2vh;" id="estado-texto-{{ u.id_usuario }}" class="pedircaracter {{ 'activo' if u.estado else 'inactivo' }}">
                                                                 {% if u.estado %}
                                                                     Activo
                                                                 {% else %}
@@ -485,7 +486,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="sesioncontent flex1 contenido oculto" id="Recibos">
+                <div  class="sesioncontent flex1 contenido oculto" id="Recibos">
                     <div class="divtituloagg ">
                         <h6 style="margin-left: 2vh;">Facturas Registradas.</h6>
                     </div>
@@ -509,7 +510,7 @@
 
     <!-- Título sección de estadísticas -->
     <div class="divtituloagg sticky">
-        <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas anuales</h6>
+        <h6 style="margin-left: 2vh;">Estadísticas en gráficas de ventas Anuales</h6>
     </div>
 
     <!-- Contenedor de la gráfica -->
@@ -530,7 +531,7 @@
             <i id="iconoModalMensajes" class="fas"></i>
             <p id="textoModalMensajes"></p>
         </div>
-    </div>
+    </div>      
     <footer>
         <div class="tfoot">
         </div>

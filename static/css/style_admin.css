@@ -654,9 +654,9 @@ input {
 }
 
 .imagenlupa {
-    width: 50%;
-    height: 100%;
-
+    width: 30%;
+    height: 70%;
+    margin-top: 1vh;
 
 }
 
@@ -856,6 +856,7 @@ h4 {
     align-items: center;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 1vh;
+    padding-bottom: 5vh;
 }
 
 h2 {
@@ -864,7 +865,7 @@ h2 {
 }
 
 .divpedirdatosclient {
-    width: 85%;
+    width: 90%;
     height: 27vh;
     margin-top: 5vh;
     background: #d4d4d4;
@@ -873,7 +874,7 @@ h2 {
     align-items: center;
     border: 3px ridge;
     border-bottom: none;
-    border-radius: 1vh 1vh 0vh 0vh;
+    
 }
 
 .formclient {
@@ -893,37 +894,42 @@ h2 {
 }
 
 .divcomprita {
-    width: 85%;
-    height: 50vh;
+    width: 90%;
+    height: 60vh;
 
     margin-bottom: 5vh;
     border: 3px ridge;
     border-top: none;
-    border-radius: 0vh 0vh 1vh 1vh;
+    
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 4fr 4fr;
+    
+    
 }
 
 .columna11 {
     border-right: 3px ridge;
     background: #e7e6e6;
+    
 }
 
 .columna22 {
     border-left: 3px ridge;
     background: #d4d4d4;
     display: flex;
-
+    border-top: 3px ridge;
     align-items: center;
     flex-direction: column;
 }
 
 .categorias {
-    width: 100%;
+    width: 96.1%;
     background: white;
     height: 4vh;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     display: flex;
+    position: relative;
+    bottom: 2.1vh;
 }
 
 .cat1:hover {
@@ -948,14 +954,17 @@ h2 {
 
 .productosenlista {
     width: 100%;
-    height: 46vh;
+    height: 50vh;
     display: grid;
     overflow-y: auto;
     grid-template-rows: repeat(20 1fr);
+    
+    position: relative;
+    bottom: 4vh;
 }
 
 .controldecompra {
-    width: 20vh;
+    width: 19vh;
     height: 34vh;
     background: #ffffff;
     display: flex;
@@ -1112,23 +1121,23 @@ h5 {
 
 
 .divuser {
-    height: 13vh;
-    margin-top: -2vh;
+    height: 16vh;
+    margin-top: 0vh;
     margin-left: 7vh;
     /* o el valor que necesites */
-    border-radius: 0.5vh;
     background: #ffffff;
     cursor: pointer;
     display: grid;
     grid-template-columns: 1fr 6fr;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
-    width: 100%;
+    width: 80%;
 }
 
 
 .divuser:hover {
     background: #ececec;
 }
+
 
 .genero {
     width: 5vh;
@@ -1144,7 +1153,7 @@ h5 {
 
 .divnombreydatos {
     width: 95%;
-    height: 80%;
+    height: 85%;
     display: grid;
     grid-template-rows: 1fr 3fr;
 }
@@ -1153,6 +1162,7 @@ h5 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
+    
 }
 
 .displaydatos {
@@ -1164,11 +1174,28 @@ h5 {
     margin-left: 2vh;
     margin-right: 2vh;
     margin-top: 6vh;
-    height: 12vh;
+    height: 16vh;
     display: grid;
     grid-template-columns: 1fr 17fr;
 }
 
+.button {
+    color: #ecf0f1;
+    font-size: 17px;
+    background-color: #e67e22;
+    border: 1px solid #f39c12;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 10px;
+    box-shadow: 0px 6px 0px #d35400;
+    transition: all 0.1s;
+}
+
+.button:active {
+    box-shadow: 0px 2px 0px #d35400;
+    position: relative;
+    top: 2px;
+}
 /* 
 #uni {
     display: flex;
@@ -1213,16 +1240,12 @@ background-color: red;
     pointer-events: none;
 }
 
-/* 
+ 
 .botoneditaroeliminar {
-    width: 3.4vh;
-    height: 3.4vh;
     display: flex;
     align-items: center;
-    background-color: red;
-
 }
-
+/*
 .botonx {
     width: 100%;
     height: 35%;
@@ -1630,7 +1653,7 @@ background-color: red;
 .divfacturas {
     width: 90%;
 
-    outline: 1px solid;
+    background: #f8f8f8;
 
 }
 
@@ -1650,10 +1673,11 @@ background-color: red;
     background-color: #f9f9f9;
     padding: 5px 15px;
     border-bottom: 1px solid #ddd;
-    width: 91%;
+    width: 100%;
     margin-bottom: 3vh;
 
 }
+
 
 .factura {
     background: #eee;
@@ -1683,30 +1707,32 @@ background-color: red;
 }
 
 .recibo {
-    background: #f8f8f8;
+    
     padding: 10px;
     border-left: 3px solid #F38221;
     margin: 5px 0 10px 10px;
     border-radius: 4px;
     overflow-y: auto;
-    width: 90%;
+    width: 100%;
+    
 }
 
 table {
-    width: 100%;
+    width: 50%;
     border-collapse: collapse;
     text-align: center;
     font-family: Arial, sans-serif;
 }
-
 th,
 td {
     border: 1px solid #333;
     padding: 10px;
+    width: 3vh;
 }
 
 th {
     background-color: #706f6f;
+    width: 3vh;
 }
 
 .contenido-mes,
@@ -1719,6 +1745,10 @@ th {
     margin-bottom: 3vh;
 
 }
+.contenido-factura{
+    background: #f8f8f8;
+    width: 130vh;
+}
 
 .factura {
     background: #eee;
@@ -1748,13 +1778,15 @@ th {
 }
 
 .recibo {
-    background: #f8f8f8;
+    background: #ffffff;
     padding: 10px;
     border-left: 3px solid #F38221;
     margin: 5px 0 10px 10px;
     border-radius: 4px;
     overflow-y: auto;
-    width: 90%;
+    width: 135vh;
+    overflow-x: auto;
+    
 }
 
 

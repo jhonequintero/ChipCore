@@ -1036,11 +1036,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     divMes.classList.add("mes");
                     divMes.style.height = "30px";
                     divMes.style.background = "#ccc";
+                    
                     divMes.style.margin = "10px";
                     divMes.textContent = nombreMes;
 
                     const contenedorMes = document.createElement("div");
                     contenedorMes.classList.add("contenido-mes");
+                    
 
                     const facturas = data[i];
 
@@ -1060,29 +1062,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             const recibo = document.createElement("div");
                             recibo.classList.add("recibo");
+                            
 
                             const tabla = document.createElement("table");
                             tabla.innerHTML = `
-                                <thead>
-                                    <tr>
-                                        <th>Folio</th><th>Fecha</th><th>Hora</th>
-                                        <th>Producto</th><th>Cantidad</th>
-                                        <th>Precio Unitario</th><th>Total</th><th>Vendedor</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${factura.detalles.map(prod => `
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td>${factura.folio}</td>
-                                            <td>${factura.fecha}</td>
-                                            <td>${factura.hora}</td>
-                                            <td>${prod.producto}</td>
-                                            <td>${prod.cantidad}</td>
-                                            <td>$${prod.precio_unitario.toLocaleString()}</td>
-                                            <td>$${prod.total.toLocaleString()}</td>
-                                            <td>${factura.vendedor}</td>
-                                        </tr>`).join("")}
-                                </tbody>
+                                            <th>Folio</th><th>Fecha</th><th>Hora</th>
+                                            <th>Producto</th><th>Cantidad</th>
+                                            <th>Precio Unitario</th><th>Total</th><th>Vendedor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${factura.detalles.map(prod => `
+                                            <tr>
+                                                <td>${factura.folio}</td>
+                                                <td>${factura.fecha}</td>
+                                                <td>${factura.hora}</td>
+                                                <td>${prod.producto}</td>
+                                                <td>${prod.cantidad}</td>
+                                                <td>$${prod.precio_unitario.toLocaleString()}</td>
+                                                <td>$${prod.total.toLocaleString()}</td>
+                                                <td>${factura.vendedor}</td>
+                                            </tr>`).join("")}
+                                    </tbody>
+                                </table>    
                             `;
                             recibo.appendChild(tabla);
                             contenedorDetalle.appendChild(recibo);
