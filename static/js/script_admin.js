@@ -1,33 +1,38 @@
 // --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---
 // ParticlesJS se ejecuta cuando toda la página y sus recursos están cargados.
 window.onload = function () {
-    particlesJS("particles-js", {
-        particles: {
-            number: {
-                value: 180,
-                density: { enable: true, value_area: 800 }
+    const particlesDiv = document.getElementById("particles-js");
+    if (particlesDiv && particlesDiv.offsetHeight > 0) {
+        particlesJS("particles-js", {
+            particles: {
+                number: {
+                    value: 180,
+                    density: { enable: true, value_area: 800 }
+                },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5 },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#ffffff",
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
             },
-            color: { value: "#ffffff" },
-            shape: { type: "circle" },
-            opacity: { value: 0.5 },
-            size: { value: 3, random: true },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: "#ffffff",
-                opacity: 0.4,
-                width: 1
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
+                modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
             },
-            move: { enable: true, speed: 1.5, direction: "none", out_mode: "out" }
-        },
-        interactivity: {
-            detect_on: "canvas",
-            events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: false } },
-            modes: { grab: { distance: 180, line_linked: { opacity: 1 } } }
-        },
-        retina_detect: true
-    });
+            retina_detect: true
+            // tu configuración aquí...
+        });
+    }
 };
+
 
 
 
@@ -173,7 +178,8 @@ async function cargarProductos() {
                             <div class="divprice">
                                 <div class="precio">
                                     <h4>Precio:</h4>
-                                    <div class="insertprecio">$${p.precio.toFixed(2)}</div>
+                                    <div class="insertprecio">${p.precio.toLocaleString("es-CO", { style: "currency", currency: "COP" })}</div>
+
                                 </div>
                             </div>
                         </div>
@@ -232,6 +238,15 @@ document.getElementById("form-editar-producto").addEventListener("submit", funct
             }
         });
 });
+
+// Función debounce para evitar que se ejecute en cada letra
+function debounce(func, delay = 300) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
 
 let carrito = []; // glabal
@@ -536,71 +551,6 @@ function cambiarEstadoUsuario(id) {
 
 
 
-// --- Funciones relacionadas con ventas y usuarios ---
-
-// Función para cargar registros de ventas
-// async function cargarVentas() {
-//     const contenedor = document.querySelector('.divmostrarfacturas');
-//     contenedor.innerHTML = 'Cargando registros de ventas...';
-
-//     try {
-//         const res = await fetch('/api/ventas');
-//         if (!res.ok) throw new Error('Error al obtener ventas');
-
-//         const ventas = await res.json();
-
-//         if (ventas.length === 0) {
-//             contenedor.innerHTML = '<p>No hay registros de ventas.</p>';
-//             return;
-//         }
-
-//         let html = `
-//             <h2>Registro de Ventas</h2>
-//             <table border="1" cellspacing="0" cellpadding="4">
-//                 <thead>
-//                     <tr>
-//                         <th>Fecha</th>
-//                         <th>Hora</th>
-//                         <th>Folio</th>
-//                         <th>Nombre Cliente</th>
-//                         <th>Cédula Cliente</th>
-//                         <th>Código Producto</th>
-//                         <th>Nombre Producto</th>
-//                         <th>Cantidad</th>
-//                         <th>Total</th>
-//                         <th>Vendedor</th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//         `;
-
-//         ventas.forEach(v => {
-//             html += `
-//                 <tr>
-//                     <td>${v.fecha}</td>
-//                     <td>${v.hora}</td>
-//                     <td>${v.folio}</td>
-//                     <td>${v.nombre_cliente}</td>
-//                     <td>${v.cedula_cliente}</td>
-//                     <td>${v.codigo_producto}</td>
-//                     <td>${v.nombre_producto}</td>
-//                     <td>${v.cantidad}</td>
-//                     <td>$${v.total.toFixed(2)}</td>
-//                     <td>${v.vendedor}</td>
-//                 </tr>
-//             `;
-//         });
-
-//         html += '</tbody></table>';
-//         contenedor.innerHTML = html;
-
-//     } catch (error) {
-//         contenedor.innerHTML = `<p>Error al cargar ventas: ${error.message}</p>`;
-//     }
-// }
-
-
-
 
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
 
@@ -725,12 +675,21 @@ document.addEventListener('DOMContentLoaded', () => {
         filtrarProductos();
     });
 
+    // ✅ Buscar en tiempo real mientras escribe, pero con debounce
+    const inputBuscador = document.getElementById("buscador");
+    if (inputBuscador) {
+        inputBuscador.addEventListener("input", filtrarProductos);
+    }
+
+
+    // ✅ También permite buscar con Enter como estaba antes
     document.getElementById("buscador").addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
             filtrarProductos();
         }
     });
+
 
 
     // Evento para buscar usuarios por cédula con botón
