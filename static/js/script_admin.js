@@ -102,10 +102,34 @@ function Enseñarpag(id) {
 }
 
 
-// Mostrar modal al hacer clic en cualquier botón de editar producto
+function ocultarProductos() {
+    const contenedorProductos = document.querySelector(".mostrarproductos");
+    if (contenedorProductos) {
+        contenedorProductos.style.visibility = "hidden";
+        contenedorProductos.style.opacity = "0";
+        contenedorProductos.style.pointerEvents = "none";
+    }
+}
+
+function mostrarProductos() {
+    const contenedorProductos = document.querySelector(".mostrarproductos");
+    if (contenedorProductos) {
+        contenedorProductos.style.visibility = "visible";
+        contenedorProductos.style.opacity = "1";
+        contenedorProductos.style.pointerEvents = "auto";
+    }
+}
+
 document.addEventListener("click", function (e) {
     const btn = e.target.closest(".btn-editar-producto");
     if (!btn) return;
+
+    const contenedorProductos = document.querySelector(".mostrarproductos");
+    if (contenedorProductos) {
+        contenedorProductos.style.visibility = "hidden";
+        contenedorProductos.style.opacity = "0";
+        contenedorProductos.style.pointerEvents = "none";
+    }
 
     document.getElementById("modal_id").value = btn.dataset.id;
     document.getElementById("modal_nombre").value = btn.dataset.nombre;
@@ -116,10 +140,21 @@ document.addEventListener("click", function (e) {
     document.getElementById("modal-editar").style.display = "flex";
 });
 
-
 function cerrarModal() {
-    document.getElementById("modal-editar").style.display = "none";
+    const modal = document.getElementById("modal-editar");
+    const contenedorProductos = document.querySelector(".mostrarproductos");
+
+    modal.style.display = "none";
+
+    // Mostrar productos sin esperar nada
+    if (contenedorProductos) {
+        contenedorProductos.style.visibility = "visible";
+        contenedorProductos.style.opacity = "1";
+        contenedorProductos.style.pointerEvents = "auto";
+    }
 }
+
+
 
 
 
@@ -144,7 +179,7 @@ async function cargarProductos() {
                 : `<span style="display:inline-block; height:89%; width:7vh; text-align: center; color: red; font-weight: bold;">None</span>`;
             const productoHTML = `
                 <div class="divdivproducto">
-                    <div class="botoneditaroeliminar">
+                    
                         <div class="botonx">
                             <button class="buttonX btn-editar-producto"
                                 data-id="${p.id}"
@@ -154,7 +189,7 @@ async function cargarProductos() {
                                 data-precio="${p.precio}">
                                 <img class="imgx" src="/static/img/tuerca.png" alt="Editar">
                             </button>
-                        </div>
+                    
                     </div>
                     <div class="divproducto">
                         <div class="colum1">
@@ -263,7 +298,7 @@ function renderCarrito() {
 
         div.innerHTML = `
             <div class="celda eliminar">
-                <button onclick="eliminar(${item.id})">🗑️</button>
+                <button onclick="eliminar(${item.id})">🗑</button>
             </div>
             <div class="celda id">${item.id}</div>
             <div class="celda cantidad">
@@ -300,7 +335,7 @@ async function verificarYAgregar(id, cantidad) {
         }
 
         if (!data.suficiente) {
-            showMessageModal(`⚠️ ${data.mensaje}. Solo quedan ${data.stock} unidades.`, 'warning');
+            showMessageModal(`⚠ ${data.mensaje}. Solo quedan ${data.stock} unidades.`, 'warning');
             return;
         }
 
@@ -550,6 +585,21 @@ function cambiarEstadoUsuario(id) {
 }
 
 
+// Esperar a que el backend actualice el stock (máximo 5 intentos)
+async function esperarActualizacionStock(idProductoOriginal, stockEsperado) {
+    for (let i = 0; i < 5; i++) {
+        const res = await fetch("/api/productos");
+        const productos = await res.json();
+
+        const productoActual = productos.find(p => p.id === idProductoOriginal);
+        if (productoActual && productoActual.cantidad <= stockEsperado) {
+            return true; // Ya se actualizó
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500)); // Esperar 0.5s y reintentar
+    }
+    return false; // No se actualizó en el tiempo esperado
+}
 
 
 // --- Event Listeners (se ejecutan cuando el DOM está completamente cargado) ---
@@ -676,10 +726,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ✅ Buscar en tiempo real mientras escribe, pero con debounce
+    // Solo activar filtrado en el input del buscador, no en todos
     const inputBuscador = document.getElementById("buscador");
     if (inputBuscador) {
         inputBuscador.addEventListener("input", filtrarProductos);
     }
+
 
 
     // ✅ También permite buscar con Enter como estaba antes
@@ -797,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector(".botonenviarcompra").addEventListener("click", async (e) => {
         const boton = e.target;
 
-        if (boton.disabled) return; // evita múltiples envíos
+        if (boton.disabled) return;
 
         boton.disabled = true;
         boton.innerText = "Procesando...";
@@ -819,76 +871,66 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const res = await fetch("/finalizar_compra", {
+            fetch("/registrar_compra_background", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                showMessageModal("❌ Error: " + (errorData.mensaje || "Error desconocido"), "error");
-                return;
-            }
+            setTimeout(async () => {
+                showMessageModal("✅ Compra finalizada, registro en proceso. Factura será enviada al correo.", "success");
 
-            const result = await res.json();
-            showMessageModal(result.mensaje, "success");
+                carrito = [];
+                renderCarrito();
+                document.getElementById("nombre_completo").value = "";
+                document.getElementById("correo").value = "";
+                document.getElementById("cedula").value = "";
 
-            carrito = [];
-            renderCarrito();
+                // ✅ Recargar productos y esperar que se reflejen los cambios en stock
+                const seccionProductos = document.getElementById("buscarproducto");
+                if (seccionProductos && !seccionProductos.classList.contains("oculto")) {
+                    await esperarActualizacionStock(carrito);
+                    await cargarProductos();
 
-            document.getElementById("nombre_completo").value = "";
-            document.getElementById("correo").value = "";
-            document.getElementById("cedula").value = "";
-
-            // ✅ NUEVO BLOQUE: refrescar productos si estás viendo la sección de productos
-            const seccionProductos = document.getElementById("buscarproducto");
-            if (seccionProductos && !seccionProductos.classList.contains("oculto")) {
-                await cargarProductos();
-
-                // ✅ Si el buscador tiene texto, aplica el filtro otra vez
-                const buscador = document.getElementById("buscador");
-                if (buscador && buscador.value.trim() !== "") {
-                    filtrarProductos();
+                    const buscador = document.getElementById("buscador");
+                    if (buscador && buscador.value.trim() !== "") {
+                        filtrarProductos();
+                    }
                 }
-            }
 
-            // ✅ NUEVO BLOQUE: refrescar ventas si estás en "Recibos"
-            const seccionRecibos = document.getElementById("Recibos");
-            if (seccionRecibos && !seccionRecibos.classList.contains("oculto")) {
-                await cargarVentas();
+                // ✅ Recargar ventas también con await
+                const seccionRecibos = document.getElementById("Recibos");
+                if (seccionRecibos && !seccionRecibos.classList.contains("oculto")) {
+                    await cargarVentas();
 
-                // 🟢 ACTUALIZAR LA GRÁFICA CON EL AÑO ACTUAL
-                const anioActual = new Date().getFullYear();
-                cargarGraficaVentas(anioActual);
+                    const anioActual = new Date().getFullYear();
+                    cargarGraficaVentas(anioActual);
 
-                // 🟢 ACTUALIZAR SELECTOR DE AÑOS (opcional pero recomendado)
-                fetch('/api/anios-disponibles')
-                    .then(res => res.json())
-                    .then(anios => {
-                        const selector = document.getElementById('selector-anio');
-                        selector.innerHTML = ''; // limpiar
-                        anios.sort().forEach(anio => {
-                            const opt = document.createElement("option");
-                            opt.value = anio;
-                            opt.textContent = anio;
-                            selector.appendChild(opt);
-                        });
-
-                        selector.value = anioActual;
+                    const res = await fetch('/api/anios-disponibles');
+                    const anios = await res.json();
+                    const selector = document.getElementById('selector-anio');
+                    selector.innerHTML = '';
+                    anios.sort().forEach(anio => {
+                        const opt = document.createElement("option");
+                        opt.value = anio;
+                        opt.textContent = anio;
+                        selector.appendChild(opt);
                     });
-            }
+                    selector.value = anioActual;
+                }
 
+            }, 100);
 
         } catch (err) {
             console.error("Error:", err);
-            showMessageModal("❌ Hubo un problema al guardar la compra.", "error");
-        }
-        finally {
+            showMessageModal("❌ Hubo un problema al iniciar el registro de la compra.", "error");
+        } finally {
             boton.disabled = false;
             boton.innerText = "Finalizar compra";
         }
     });
+
+
 
 });
 
@@ -944,7 +986,7 @@ document.getElementById("formActualizarPerfil").addEventListener("submit", async
     }
 });
 
-/*--------------------desplegables facturas --------------------*/
+// /--------------------desplegables facturas --------------------/
 const meses = document.querySelectorAll('.mes');
 meses.forEach(mes => {
     mes.addEventListener('click', () => {
@@ -995,13 +1037,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     divMes.classList.add("mes");
                     divMes.style.height = "30px";
                     divMes.style.background = "#ccc";
-                    
+
                     divMes.style.margin = "10px";
                     divMes.textContent = nombreMes;
 
                     const contenedorMes = document.createElement("div");
                     contenedorMes.classList.add("contenido-mes");
-                    
+
 
                     const facturas = data[i];
 
@@ -1021,7 +1063,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             const recibo = document.createElement("div");
                             recibo.classList.add("recibo");
-                            
+
 
                             const tabla = document.createElement("table");
                             tabla.innerHTML = `
@@ -1120,14 +1162,14 @@ async function cargarDatosYActualizarGrafica(anio) {
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    // 🔍 Aseguramos que los datos lleguen bien en formato {mes: N, total: X}
-    const valores = Array(12).fill(0);
-    data.forEach(dato => {
-        const index = dato.mes - 1;
-        if (index >= 0 && index < 12) {
-            valores[index] = dato.total;
-        }
-    });
+    // 💡 Aseguramos que haya 12 valores exactos y ordenados
+    const valores = [];
+
+    for (let i = 1; i <= 12; i++) {
+        const encontrado = data.find(d => Number(d.mes) === i);
+        valores.push(encontrado ? encontrado.total : 0);
+    }
+
 
     if (grafica) grafica.destroy();
 
@@ -1160,6 +1202,14 @@ async function cargarDatosYActualizarGrafica(anio) {
                 easing: 'easeInOutQuart'
             },
             scales: {
+                x: {
+                    ticks: {
+                        callback: function (value, index, ticks) {
+                            return meses[index];  // 👈 fuerza los nombres de los meses
+                        },
+                        autoSkip: false        // 👈 NO saltarse etiquetas
+                    }
+                },
                 y: {
                     beginAtZero: true,
                     ticks: {
@@ -1167,6 +1217,7 @@ async function cargarDatosYActualizarGrafica(anio) {
                     }
                 }
             },
+
             plugins: {
                 tooltip: {
                     callbacks: {

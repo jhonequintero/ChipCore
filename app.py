@@ -54,7 +54,7 @@ db = SQLAlchemy(app)
 
 
 class Usuario(db.Model):
-    _tablename_ = 'usuario'
+    tablename = 'usuario'
     codigo = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, unique=True, nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
@@ -67,7 +67,7 @@ class Usuario(db.Model):
 
 
 class Producto(db.Model):
-    _tablename_ = 'producto'
+    tablename = 'producto'
     id_producto = db.Column(db.Integer, primary_key=True)
     nombre_producto = db.Column(db.String(100), nullable=False)
     descripcion_producto = db.Column(db.String(200), nullable=True)
@@ -76,7 +76,7 @@ class Producto(db.Model):
 
 
 class Cliente(db.Model):
-    _tablename_ = 'cliente'
+    tablename = 'cliente'
     id_cliente = db.Column(db.Integer, primary_key=True)
     nombre_completo = db.Column(db.String(200), nullable=False)
     correo = db.Column(db.String(100), unique=True, nullable=False)
@@ -84,7 +84,7 @@ class Cliente(db.Model):
 
 
 class Carrito(db.Model):
-    _tablename_ = 'carrito'
+    tablename = 'carrito'
     id_carrito = db.Column(db.Integer, primary_key=True)
     id_cliente = db.Column(db.Integer, db.ForeignKey('cliente.id_cliente'), nullable=False)
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'), nullable=False)
@@ -92,7 +92,7 @@ class Carrito(db.Model):
     fecha = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 class VentaCabecera(db.Model):
-    _tablename_ = 'venta_cabecera'
+    tablename = 'venta_cabecera'
     id_venta = db.Column(db.Integer, primary_key=True)
     id_cliente = db.Column(db.Integer, db.ForeignKey('cliente.id_cliente'))
     id_vendedor = db.Column(db.Integer, db.ForeignKey('usuario.id_usuario'))
@@ -106,7 +106,7 @@ class VentaCabecera(db.Model):
 
 
 class VentaDetalle(db.Model):
-    _tablename_ = 'venta_detalle'
+    tablename = 'venta_detalle'
     id_detalle = db.Column(db.Integer, primary_key=True)
     id_venta = db.Column(db.Integer, db.ForeignKey('venta_cabecera.id_venta'))
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_producto'))
@@ -769,7 +769,7 @@ def finalizar_compra():
         }
 
         # Generar PDF y enviar correo
-        pdf_bytes = generar_pdf(datos_para_pdf)
+        # pdf_bytes = generar_pdf(datos_para_pdf)
 
         venta_info_correo = {
             "nombre_cliente": cliente.nombre_completo,
@@ -779,10 +779,13 @@ def finalizar_compra():
             "total": total_venta,
             "vendedor": vendedor.nombre
         }
+        # ✅ Lanzamos el proceso en segundo plano SIN generar PDF aquí
+        Thread(target=generar_y_enviar_factura, args=(datos_para_pdf, cliente.correo, venta_info_correo)).start()
 
-        enviar_factura_async(cliente.correo, pdf_bytes, venta_info_correo)
-
+        # ✅ Respondemos inmediatamente al usuario
         return jsonify({"mensaje": "✅ Compra finalizada, registro guardado y factura enviada al correo."})
+        # enviar_factura_async(cliente.correo, pdf_bytes, venta_info_correo)
+        
 
     except Exception as e:
         db.session.rollback()
@@ -790,7 +793,194 @@ def finalizar_compra():
         return jsonify({"mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
 
 
+def enviar_factura(destinatario, pdf_data, venta_info):
+    asunto = "Factura de tu compra en Microchip"
 
+    try:
+        # TODO LO RELACIONADO CON FLASK-MAIL DEBE ESTAR DENTRO DE ESTE BLOQUE
+        with app.app_context():
+            # 1. Renderizar el HTML para el cuerpo del correo
+            cuerpo_html_email = render_template('email_factura.html', venta_info=venta_info)
+            print(f"DEBUG: HTML del correo generado para {destinatario}")
+
+            # 2. Crear el objeto Message
+            msg = Message(subject=asunto, recipients=[destinatario])
+            msg.html = cuerpo_html_email
+            print("DEBUG: Mensaje de Flask-Mail creado.")
+
+            # 3. Adjuntar el PDF
+            msg.attach(
+                filename=f"factura_{venta_info['folio']}.pdf",
+                content_type="application/pdf",
+                data=pdf_data
+            )
+            print("DEBUG: PDF adjuntado al mensaje.")
+
+            # 4. Enviar el correo
+            mail.send(msg)
+            print(f"✅ Correo enviado a {destinatario}")
+
+    except Exception as e:
+        print(f"❌ Error al enviar correo a {destinatario}: {e}")
+        print(f"Error detallado: {e}") 
+
+
+def enviar_factura_async(destinatario, pdf_data, venta_info):
+    hilo = threading.Thread(target=enviar_factura, args=(destinatario, pdf_data, venta_info))
+    hilo.start()
+from threading import Thread
+
+def generar_y_enviar_factura(datos_para_pdf, correo, venta_info):
+    try:
+        pdf_bytes = generar_pdf(datos_para_pdf)
+        enviar_factura_async(correo, pdf_bytes, venta_info)
+    except Exception as e:
+        print("❌ Error generando o enviando PDF:", e)
+
+# Lanzar en segundo plano sin bloquear la respuesta al cliente
+    # Thread(target=generar_y_enviar_factura, args=(datos_para_pdf, cliente.correo, venta_info_correo)).start()
+
+
+def generar_pdf(datos_para_pdf):
+    with app.app_context(): 
+        html_string = render_template('factura_pdf.html', **datos_para_pdf) # Desempaqueta el diccionario
+
+    # Usamos configuration=config_pdf que ya definimos globalmente.
+    pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
+    return pdf_bytes
+
+
+from flask import request, session, jsonify
+from threading import Thread
+
+@app.route('/registrar_compra_background', methods=['POST'])
+def registrar_compra_background():
+    if 'usuario' not in session or session.get('tipo') not in ['administrador', 'empleado']:
+        return jsonify({"error": "Acceso no autorizado"}), 403
+
+    try:
+        data = request.get_json()
+        id_vendedor = session.get('id_usuario')
+
+        # 🧠 Ejecutar todo el proceso en segundo plano
+        Thread(target=procesar_compra_completa, args=(data, id_vendedor)).start()
+
+        # ✅ Respuesta rápida
+        return jsonify({"mensaje": "✅ Compra en proceso, factura será enviada al correo."})
+
+    except Exception as e:
+        print("❌ Error en /registrar_compra_background:", e)
+        return jsonify({"error": "Error interno del servidor"}), 500
+def procesar_compra_completa(data, id_vendedor):
+    with app.app_context():  # 👈 Esto es lo que faltaba
+        try:
+            vendedor = Usuario.query.filter_by(id_usuario=id_vendedor).first()
+            if not vendedor:
+                print("❌ Vendedor no válido.")
+                return
+
+            cliente_data = data.get("cliente")
+            carrito_data = data.get("carrito")
+
+            if not cliente_data or not carrito_data:
+                print("❌ Datos incompletos.")
+                return
+
+            cliente = Cliente.query.filter_by(cedula=cliente_data["cedula"]).first()
+            if not cliente:
+                cliente = Cliente(
+                    nombre_completo=cliente_data["nombre"],
+                    correo=cliente_data["correo"],
+                    cedula=cliente_data["cedula"]
+                )
+                db.session.add(cliente)
+                db.session.commit()
+
+            zona_colombia = pytz.timezone("America/Bogota")
+            fecha_actual = datetime.now(zona_colombia)
+            hora_actual = fecha_actual.strftime("%H:%M:%S")
+            folio_venta = f"F{fecha_actual.strftime('%Y%m%d%H%M%S')}{random.randint(100,999)}"
+
+            total_venta = 0
+            detalles_compra = []
+
+            for item in carrito_data:
+                producto = db.session.get(Producto, item["id"])
+                if not producto or producto.cantidad_producto < item["cantidad"]:
+                    print(f"❌ Problema con producto ID {item['id']}")
+                    return
+
+                total_producto = item["cantidad"] * producto.precio_producto
+                total_venta += total_producto
+
+                detalles_compra.append({
+                    "producto": producto,
+                    "cantidad": item["cantidad"],
+                    "precio_unitario": producto.precio_producto,
+                    "total_producto": total_producto
+                })
+
+            venta_cabecera = VentaCabecera(
+                folio=folio_venta,
+                fecha=fecha_actual,
+                hora=hora_actual,
+                id_cliente=cliente.id_cliente,
+                id_vendedor=vendedor.id_usuario,
+                total=total_venta
+            )
+            db.session.add(venta_cabecera)
+            db.session.flush()
+
+            for detalle in detalles_compra:
+                db.session.add(VentaDetalle(
+                    id_venta=venta_cabecera.id_venta,
+                    id_producto=detalle["producto"].id_producto,
+                    cantidad=detalle["cantidad"],
+                    precio=detalle["precio_unitario"]
+                ))
+                detalle["producto"].cantidad_producto -= detalle["cantidad"]
+
+            db.session.commit()
+
+            datos_para_pdf = {
+                'nombre_cliente': cliente.nombre_completo,
+                'contacto_cliente': cliente.correo,
+                'cc_cliente': cliente.cedula,
+                'ciudad_cliente': 'N/A',
+                'fecha_generacion': fecha_actual.strftime('%d/%m/%Y'),
+                'hora_generacion': fecha_actual.strftime('%I:%M:%S %p'),
+                'fecha_vencimiento': fecha_actual.strftime('%Y/%m/%d'),
+                'vendedor': vendedor.nombre,
+                'forma_pago': 'Contado',
+                'items_factura': [
+                    {
+                        'referencia': d["producto"].id_producto,
+                        'descripcion': d["producto"].nombre_producto,
+                        'cantidad': d["cantidad"],
+                        'precio_unit': f"${d['precio_unitario']:.2f}",
+                        'valor_total_item': f"${d['total_producto']:.2f}"
+                    } for d in detalles_compra
+                ],
+                'descuentos': '$0.00',
+                'total_final': f"${total_venta:.2f}",
+                'valor_letras': convertir_a_letras(total_venta),
+                'notas': 'Gracias por su compra en Microchip.'
+            }
+
+            venta_info_correo = {
+                "nombre_cliente": cliente.nombre_completo,
+                "fecha": fecha_actual.strftime('%Y-%m-%d'),
+                "hora": hora_actual,
+                "folio": folio_venta,
+                "total": total_venta,
+                "vendedor": vendedor.nombre
+            }
+
+            generar_y_enviar_factura(datos_para_pdf, cliente.correo, venta_info_correo)
+
+        except Exception as e:
+            db.session.rollback()
+            print("❌ Error al procesar la compra:", e)
 
 @app.route("/api/anios-disponibles")
 def anios_disponibles():
@@ -882,38 +1072,6 @@ def obtener_facturas_anuales(anio):
         print("🔥 ERROR en facturas-anuales:", e)
         return jsonify({"error": str(e)}), 500
 
-def convertir_a_letras(numero):
-    """
-    Convierte un número (entero o flotante) a su representación en letras en español,
-    incluyendo el manejo de centavos (moneda).
-    """
-    try:
-        # Separar la parte entera y la parte decimal
-        parte_entera = int(numero)
-        parte_decimal = round((numero - parte_entera) * 100) # Obtener los centavos
-
-        letras_entera = num2words(parte_entera, lang='es')
-
-        # Formatear la parte entera
-        if parte_entera == 1:
-            letras_entera = letras_entera.replace("un", "UNO") # Para asegurar "UN PESO"
-        else:
-            letras_entera = letras_entera.upper() # Convertir todo a mayúsculas
-
-        resultado = f"{letras_entera} PESOS"
-
-        if parte_decimal > 0:
-            letras_decimal = num2words(parte_decimal, lang='es').upper()
-            resultado += f" CON {letras_decimal} CENTAVOS"
-        else:
-            resultado += " EXACTOS" # O simplemente dejarlo sin "exactos" si no lo necesitas
-
-        return resultado + " M/CTE *******"
-
-    except Exception as e:
-        return f"Error al convertir el número: {e}"
-
-
 
 @app.route('/api/facturas-por-anio/<int:anio>')
 def facturas_por_anio(anio):
@@ -987,50 +1145,38 @@ def facturas_por_anio(anio):
 
     return jsonify(resultado)
 
-
-def enviar_factura(destinatario, pdf_data, venta_info):
-    asunto = "Factura de tu compra en Microchip"
-
+def convertir_a_letras(numero):
+    """
+    Convierte un número (entero o flotante) a su representación en letras en español,
+    incluyendo el manejo de centavos (moneda).
+    """
     try:
-        # TODO LO RELACIONADO CON FLASK-MAIL DEBE ESTAR DENTRO DE ESTE BLOQUE
-        with app.app_context():
-            # 1. Renderizar el HTML para el cuerpo del correo
-            cuerpo_html_email = render_template('email_factura.html', venta_info=venta_info)
-            print(f"DEBUG: HTML del correo generado para {destinatario}")
+        # Separar la parte entera y la parte decimal
+        parte_entera = int(numero)
+        parte_decimal = round((numero - parte_entera) * 100) # Obtener los centavos
 
-            # 2. Crear el objeto Message
-            msg = Message(subject=asunto, recipients=[destinatario])
-            msg.html = cuerpo_html_email
-            print("DEBUG: Mensaje de Flask-Mail creado.")
+        letras_entera = num2words(parte_entera, lang='es')
 
-            # 3. Adjuntar el PDF
-            msg.attach(
-                filename=f"factura_{venta_info['folio']}.pdf",
-                content_type="application/pdf",
-                data=pdf_data
-            )
-            print("DEBUG: PDF adjuntado al mensaje.")
+        # Formatear la parte entera
+        if parte_entera == 1:
+            letras_entera = letras_entera.replace("un", "UNO") # Para asegurar "UN PESO"
+        else:
+            letras_entera = letras_entera.upper() # Convertir todo a mayúsculas
 
-            # 4. Enviar el correo
-            mail.send(msg)
-            print(f"✅ Correo enviado a {destinatario}")
+        resultado = f"{letras_entera} PESOS"
+
+        if parte_decimal > 0:
+            letras_decimal = num2words(parte_decimal, lang='es').upper()
+            resultado += f" CON {letras_decimal} CENTAVOS"
+        else:
+            resultado += " EXACTOS" # O simplemente dejarlo sin "exactos" si no lo necesitas
+
+        return resultado + " M/CTE *******"
 
     except Exception as e:
-        print(f"❌ Error al enviar correo a {destinatario}: {e}")
-        print(f"Error detallado: {e}") 
-
-def enviar_factura_async(destinatario, pdf_data, venta_info):
-    hilo = threading.Thread(target=enviar_factura, args=(destinatario, pdf_data, venta_info))
-    hilo.start()
+        return f"Error al convertir el número: {e}"
 
 
-def generar_pdf(datos_para_pdf):
-    with app.app_context(): 
-        html_string = render_template('factura_pdf.html', **datos_para_pdf) # Desempaqueta el diccionario
-
-    # Usamos configuration=config_pdf que ya definimos globalmente.
-    pdf_bytes = pdfkit.from_string(html_string, False, configuration=config_pdf, options={'enable-local-file-access': None}) # 'False' indica que devuelva bytes, no guarde archivo.
-    return pdf_bytes
 
 
 
