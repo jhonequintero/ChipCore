@@ -1718,7 +1718,7 @@ background-color: red;
 }
 
 table {
-    width: 50%;
+    width: 90%;
     border-collapse: collapse;
     text-align: center;
     font-family: Arial, sans-serif;
@@ -1727,12 +1727,12 @@ th,
 td {
     border: 1px solid #333;
     padding: 10px;
-    width: 3vh;
+    width: 5vh;
 }
 
 th {
-    background-color: #706f6f;
-    width: 3vh;
+    background-color: #ababab;
+    width: 5vh;
 }
 
 .contenido-mes,

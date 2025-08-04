@@ -1,3 +1,4 @@
+
 // --- Window.onload (para cosas que dependen de que todos los recursos, incluyendo imágenes, estén cargados) ---
 // ParticlesJS se ejecuta cuando toda la página y sus recursos están cargados.
 window.onload = function () {
@@ -179,8 +180,7 @@ async function cargarProductos() {
                 : `<span style="display:inline-block; height:89%; width:7vh; text-align: center; color: red; font-weight: bold;">None</span>`;
             const productoHTML = `
                 <div class="divdivproducto">
-                    
-                        <div class="botonx">
+                     <div class="botonx">
                             <button class="buttonX btn-editar-producto"
                                 data-id="${p.id}"
                                 data-nombre="${p.nombre}"
@@ -213,7 +213,8 @@ async function cargarProductos() {
                             <div class="divprice">
                                 <div class="precio">
                                     <h4>Precio:</h4>
-                                    <div class="insertprecio">${p.precio.toLocaleString("es-CO", { style: "currency", currency: "COP" })}</div>
+                                    <div class="insertprecio">${p.precio.toLocaleString("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 })}</div>
+
 
                                 </div>
                             </div>
@@ -306,10 +307,10 @@ function renderCarrito() {
                 ${item.cantidad}
                 <button onclick="incrementar(${item.id})">+</button>
             </div>
-            <div class="celda precio">$${item.precio.toFixed(2)}</div>
-            
-            <div class="celda precio-total">$${precioTotal.toFixed(2)}</div>
-            
+            <div class="celda precio">${item.precio.toLocaleString("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 })}</div>
+
+            <div class="celda precio-total">${precioTotal.toLocaleString("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 })}</div>
+
         `;
         container.appendChild(div);
     });
@@ -734,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // ✅ También permite buscar con Enter como estaba antes
+    // ✅ También permite buscar con Enter 
     document.getElementById("buscador").addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -1083,8 +1084,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                                 <td>${factura.hora}</td>
                                                 <td>${prod.producto}</td>
                                                 <td>${prod.cantidad}</td>
-                                                <td>$${prod.precio_unitario.toLocaleString()}</td>
-                                                <td>$${prod.total.toLocaleString()}</td>
+                                                <td>${prod.precio_unitario.toLocaleString("es-CO")}</td>
+                                                <td>${prod.total.toLocaleString("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 })}</td>
                                                 <td>${factura.vendedor}</td>
                                             </tr>`).join("")}
                                     </tbody>
@@ -1132,7 +1133,7 @@ let modoLinea = false;
 
 // Función para obtener años disponibles desde el backend
 async function cargarAnios() {
-    console.log("🔍 Ejecutando cargarAnios()");
+    console.log(" Ejecutando cargarAnios()");
     const res = await fetch('/api/anios-disponibles');
     let anios = await res.json();
 
@@ -1205,7 +1206,7 @@ async function cargarDatosYActualizarGrafica(anio) {
                 x: {
                     ticks: {
                         callback: function (value, index, ticks) {
-                            return meses[index];  // 👈 fuerza los nombres de los meses
+                            return meses[index];  //  fuerza los nombres de los meses
                         },
                         autoSkip: false        // 👈 NO saltarse etiquetas
                     }

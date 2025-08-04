@@ -6,7 +6,7 @@ from datetime import datetime
 import random
 from datetime import timedelta
 from collections import defaultdict
-
+from threading import Thread
 import os
 from sqlalchemy import func
 from num2words import num2words
@@ -758,12 +758,13 @@ def finalizar_compra():
                     'referencia': d["producto"].id_producto,
                     'descripcion': d["producto"].nombre_producto,
                     'cantidad': d["cantidad"],
-                    'precio_unit': f"${d['precio_unitario']:.2f}",
-                    'valor_total_item': f"${d['total_producto']:.2f}"
+                   'precio_unit': "${:,.0f}".format(d['precio_unitario']).replace(",", "."),
+                    'valor_total_item': "${:,.0f}".format(d['total_producto']).replace(",", ".")
+
                 } for d in detalles_compra
             ],
             'descuentos': '$0.00',
-            'total_final': f"${total_venta:.2f}",
+            'total_final': "${:,.0f}".format(total_venta).replace(",", "."),
             'valor_letras': convertir_a_letras(total_venta),
             'notas': 'Gracias por su compra en Microchip.'
         }
@@ -850,8 +851,7 @@ def generar_pdf(datos_para_pdf):
     return pdf_bytes
 
 
-from flask import request, session, jsonify
-from threading import Thread
+
 
 @app.route('/registrar_compra_background', methods=['POST'])
 def registrar_compra_background():
@@ -957,8 +957,9 @@ def procesar_compra_completa(data, id_vendedor):
                         'referencia': d["producto"].id_producto,
                         'descripcion': d["producto"].nombre_producto,
                         'cantidad': d["cantidad"],
-                        'precio_unit': f"${d['precio_unitario']:.2f}",
-                        'valor_total_item': f"${d['total_producto']:.2f}"
+                        'precio_unit': "${:,.0f}".format(d['precio_unitario']).replace(",", "."),
+                        'valor_total_item': "${:,.0f}".format(d['total_producto']).replace(",", ".")
+
                     } for d in detalles_compra
                 ],
                 'descuentos': '$0.00',

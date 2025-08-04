@@ -257,7 +257,11 @@
                                                 <div class="divprice">
                                                     <div class="precio">
                                                         <h4>Precio:</h4>
-                                                       <div class="insertprecio">${{ "{:,.2f}".format(p.precio_producto).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>
+                                                        <div class="insertprecio">
+                                                            ${{ "{:,.0f}".format(p.precio_producto).replace(",", ".") }}
+                                                        </div>
+
+                                                       <!--div class="insertprecio">${{ "{:,.2f}".format(p.precio_producto).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>-->
 
                                                     </div>
                                                 </div>
